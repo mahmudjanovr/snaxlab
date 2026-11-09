@@ -1,0 +1,451 @@
+---
+title: "GNU/Linux: erkin dasturiy ta’minot falsafasidan zamonaviy operatsion tizimgacha"
+description: "Unix merosi, Richard Stallmanning erkin dasturiy ta'minot falsafasi, Linus Torvalds va Linux yadrosi, monolit arxitektura mexanikasi, distributivlar hamda zamonaviy raqamli sivilizatsiya poydevori tahlili."
+date: "2026-09-27"
+lang: "uz"
+tags: ["GNU", "Linux", "kernel", "open-source", "free-software", "operatsion-tizim", "dasturlash", "texnologiya"]
+author: "snaxcyz"
+---
+
+<div
+  style={{
+    margin: "2.5rem auto",
+    maxWidth: "760px",
+    textAlign: "center",
+    fontFamily: 'Georgia, "Times New Roman", serif',
+    fontSize: "1.15rem",
+    lineHeight: "1.9",
+    fontStyle: "italic",
+    letterSpacing: "0.01em",
+    opacity: 0.9
+  }}
+>
+  "Erkin dasturiy ta'minot masalasi — bu narx masalasi emas, erkinlik masalasidir. U erkin pivo emas, so'z erkinligini anglatadi."
+  <div style={{ marginTop: "0.75rem", fontSize: "0.9rem", fontStyle: "normal", opacity: 0.7 }}>
+    — Richard Stallman, Free Software Foundation asoschisi
+  </div>
+</div>
+
+<figure class="my-8">
+  <img
+    src="/imgs/gnu-linux.png"
+    alt="GNU va Tux — Erkin dasturiy ta'minot va Linux yadrosining rasmiy timsollari"
+    class="w-full rounded-xl shadow-md border border-border object-contain max-h-[520px] bg-card p-6"
+  />
+  <figcaption class="mt-2 text-center text-xs text-muted-foreground">
+    GNU loyihasi timsoli (Gnu antilopasi boshi, Aurelio A. Heckert asari) va Linux yadrosi maskoti (Tux pingvini, Larry Ewing asari). Erkin san'at litsenziyasi (Free Art License / FAL) va CC BY-SA asosida tarqatiladi.
+  </figcaption>
+</figure>
+
+
+## I. Kirish: kompyuterning ko‘rinmas poydevori
+
+Har safar smartfoningizda xaritani ochganingizda, qidiruv tizimiga so'rov yuborganingizda, bulutli xizmatlardan fayl yuklab olganingizda yoki samolyot bortidagi ko'ngilochar tizimdan foydalanganingizda, siz o'zingiz bilmagan holda insoniyat tarixidagi eng yirik, eng qudratli va ayni paytda eng ko'rinmas intellektual inshoot — **GNU/Linux operatsion tizimi** bilan muloqotda bo'lasiz. Zamonaviy dunyo interneti, xalqaro moliya bozorlari, eng tezkor superkompyuterlar va milliardlab aqlli qurilmalar aynan mana shu tizim poydevoriga qurilgan. Biroq, zamonaviy axborot texnologiyalari bilan har kuni to'qnash keladigan oddiy foydalanuvchilar, hatto ko'plab amaliyotchi dasturchilar uchun ham bu tizimning ichki mexanikasi, uning kelib chiqishi va falsafiy ildizlari ko'pincha sirli jumboq bo'lib qolmoqda.
+
+Ushbu ulug'vor tizimni chuqur tushunish uchun avvalo kompyuter olamining eng asosiy tushunchalarini oydinlashtirib olishimiz lozim. **Operatsion tizim (Operating System — OS)** nima? Kompyuterning o'zi — bu kremniy chiplari, tranzistorlar, magnit yoki flesh-xotira katakchalari va elektr signallaridan iborat murakkab apparat (hardware) yig'indisidir. Protsessor o'z-o'zidan faqatgina ikkilik sanoq tizimidagi (0 va 1) mashina ko'rsatmalarini bajaradi; u qaysi dastur qancha xotira olishi kerakligini, monitor ekranida qaysi piksel qanday rangda yonishini yoki tarmoq simidan kelayotgan signallar qaysi ilovaga tegishli ekanini bilmaydi. Operatsion tizim — bu apparat ta'minoti bilan foydalanuvchi ilovalari (web-brauzer, matn muharriri, o'yinlar) o'rtasida vositachilik qiluvchi, kompyuterning barcha moddiy resurslarini (CPU vaqti, operativ xotira, diskdagi ma'lumotlar, tashqi qurilmalar) adolatli va xavfsiz boshqaruvchi dasturiy ta'minot kompleksidir.
+
+Operatsion tizimning qoq markazida esa uning eng maxfiy va imtiyozli qismi — **Yadro (Kernel)** joylashgan. Yadro — bu kompyuter yoqilgan daqiqadan to o'chirilguncha operativ xotirada doimiy yashaydigan, protsessorning eng yuqori imtiyozli rejimida ishlaydigan va apparat vositalariga to'g'ridan-to'g'ri buyruq berish huquqiga ega bo'lgan yagona bosh dasturdir. Agar yadro bo'lmasa, kompyuterdagi barcha dasturlar bir vaqtning o'zida bitta xotiraga tartibsiz yozib, bir-birini qulatgan, protsessorni xudbinlarcha egallab olgan va tizimni daqiqalar ichida falaj qilgan bo'lar edi. Yadro — bu davlatdagi qonun ustuvorligi va yo'l harakati politsiyasiga o'xshaydi: u barcha jarayonlarga o'z yo'lagini ajratadi va to'qnashuvlarning oldini oladi.
+
+Aynan shu yerda biz kundalik tilda eng ko'p uchraydigan ulkan chalkashlikka duch kelamiz. Oddiy foydalanuvchi "Linux" deganda nimani tushunadi? Ko'pchilikning ko'z oldiga chiroyli grafik ish stoli (masalan, Ubuntu yoki Fedora), fayllar oynasi, ilovalar do'koni va terminal keladi. Kimdir Linuxni Windows yoki macOS kabi yaxlit bir operatsion tizim deb biladi. Biroq qat'iy texnik va tarixiy mezon bilan qaralganda, **Linux — bu butun bir operatsion tizim emas, balki faqatgina uning yadrosidir (Kernel)**! 
+
+Linux yadrosining o'zi kompyuter monitorida deraza ochib bera olmaydi, foydalanuvchi buyruqlarini qabul qiluvchi qobiq (shell) taqdim etmaydi, C tilida yozilgan dasturlarni kompilyatsiya qilmaydi va matnli fayllarni o'qimaydi. To'laqonli, mustaqil operatsion tizim vujudga kelishi uchun yadro atrofida minglab yordamchi dasturlar: kompilyatorlar, standart kutubxonalar, buyruqlar qobig'i, fayl boshqaruvi utilitalari va xavfsizlik vositalari bo'lishi shart. Mana shu vositalarning barchasi Linus Torvalds Linux yadrosini yozishidan ancha yillar oldin **GNU loyihasi** tomonidan yaratilgan edi. 
+
+Shu sababli, Richard Stallman va Free Software Foundation ta'kidlaganidek, ushbu tizimni **GNU/Linux** deb atash shunchaki nomlash qaysarligi yoki quruq da'vo emas. Bu erkin dasturiy ta'minot falsafasining tarixiy haqiqatini tiklash, erkin tizim uchun 40 yildan ortiq kurashgan minglab dasturchilarning mehnatini tan olish va kompyuter dunyosining asl arxitekturasini to'g'ri idrok etish demakdir.
+
+## II. Unix merosi va erkin dasturiy ta’minot g‘oyasi
+
+Zamonaviy GNU/Linux arxitekturasining ildizlarini tushunish uchun biz vaqt mashinasida 1960-yillarning oxiriga, afsonaviy **AT&T Bell Laboratories** ilmiy markaziga qaytishimiz kerak. 1969-yilda Bell Labs muhandislari Ken Thompson, Dennis Ritchie, Brian Kernighan va Doug McIlroy kompyuterlar tarixida inqilob yasagan yangi operatsion tizim — **Unix**ni yaratdilar. Dennis Ritchie tomonidan Unix uchun maxsus ishlab chiqilgan **C dasturlash tili** esa tizimning apparatga bog'liqligini yo'q qildi: endilikda operatsion tizimni bitta arxitekturadan ikkinchisiga osongina ko'chirish (porting) mumkin bo'lib qoldi.
+
+Unix o'zi bilan birga kompyuter olamiga o'lmas **Unix falsafasi**ni olib kirdi. Ushbu falsafa to'rtta oltin qoidaga tayanar edi:
+1. *Kichik dasturlar yozing: har bir dastur faqat bitta ishni bajarsin, ammo uni mukammal darajada bajarsin.*
+2. *Dasturlarni shunday quringki, ular birgalikda ishlay olsin.*
+3. *Matnli oqimlar (text streams) universal interfeysdir, chunki matnni inson ham, mashina ham tushunadi.*
+4. *Murakkablikdan qoching: tizimning shaffof va tushunarli bo'lishi ortiqcha "aqllilik"dan ming chandon afzaldir.*
+
+Unixning dastlabki yillarida (1970-yillarda) dasturiy ta'minot bugungi kabi qattiq tijoriylashgan "mulk" emas edi. O'sha paytlarda kompyuterlar ulkan korxona va universitetlarga sotiladigan bahaybat apparatlar (mainframelar) bo'lib, dasturiy kod ularga qo'shimcha sifatida, ochiq manba kodlari bilan birga bepul ulashilar edi. Universitetlardagi olimlar va muhandislar dastur kodlarini erkin ko'rib chiqar, xatolarni tuzatar, yangi imkoniyatlar qo'shar va bir-biri bilan pochtada magnit lentalarni almashar edilar. Stenford, Berkli (UC Berkeley) va Massachusets Texnologiya Instituti (MIT) kabi dargohlarda chinakam **"hackerlik madaniyati"** (bu so'z o'sha davrda kiberjinoyatchini emas, texnologiyani chuqur sevadigan va uni ijodiy rivojlantiruvchi muhandislarni anglatgan) shakllandi. Berklida yaratilgan BSD (Berkeley Software Distribution) Unix tizimi bu erkin hamkorlikning eng yorqin cho'qqisi bo'ldi.
+
+Biroq 1970-yillarning oxiri va 1980-yillarning boshlarida vaziyat keskin va fojiali tomonga o'zgardi. Kompyuter ishlab chiqaruvchi kompaniyalar dasturiy ta'minotning ulkan mustaqil iqtisodiy qudratini anglab yetdilar. AQSh hukumatining monopoliyaga qarshi sud jarayonlari oqibatida AT&T kompaniyasi bo'lib yuborilgach, kompaniya Unix tizimini qattiq tijoratlashtirishga qaror qildi. Universitetlarga endilikda kodlarni erkin o'rganish taqiqlandi, qimmatbaho litsenziyalar va qat'iy **oshkor qilmaslik to'g'risidagi bitimlar (Non-Disclosure Agreements — NDA)** joriy etildi. Dasturlar "mulkiy" (proprietary / yopiq) shaklga o'tdi: foydalanuvchiga faqat tushunarsiz binar mashina kodlari berilar, manba kodi esa kompaniya seyflarida qulflanar edi. Do'stiga dastur nusxasini berish yoki xatoni o'zi tuzatish jinoyatga tenglashtirildi.
+
+Ushbu ma'naviy inqirozni eng chuqur his qilgan shaxs MIT Sun'iy intellekt laboratoriyasining (AI Lab) iste'dodli xodimi **Richard Stallman (RMS)** bo'ldi. Stallmanning hayotini butunlay o'zgartirgan mashhur voqea 1980-yilda sodir bo'ldi. Laboratoriyaga Xerox kompaniyasi tomonidan yangi **Xerox 9700 lazer printeri** sovg'a qilingan edi. Printer qog'oz tiqilib qolganda tez-tez to'xtab qolar, natijada butun bino xodimlari soatlab o'z chop ishlarini kutib sarson bo'lardilar. Avvalgi printerlarda Stallman drayver kodini o'zi o'zgartirib, printer to'xtab qolganda tarmoqdagi barcha foydalanuvchilarga avtomatik xabar yuboradigan funksiya qo'shgan edi. 
+
+Ammo yangi Xerox printerining manba kodi yopiq edi. Stallman printerning dastur kodini yozgan Karnegi-Mellon universiteti tadqiqotchisi huzuriga borib, kodni berishni so'raganida, u NDA shartnomasini imzolaganini va kodni berolmasligini aytib rad etdi. Bu voqea Stallmanning qalbiga chaqmoqdek urildi: muhandislik birodarligi, ilm-fanning ochiqligi va insoniy hamkorlik shunchaki qog'ozdagi shartnomalar evaziga sotilgan edi!
+
+Stallman oldida ikki yo'l bor edi: yo tizimga taslim bo'lib, boy-badavlat kompaniyalarda boshqalarning erkinligini cheklovchi yopiq dasturlar yozish, yoki barcha insonlar uchun ochiq, erkin raqamli olamni qayta qurish uchun kurashga kirishish. U ikkinchi, eng mashaqqatli yo'lni tanladi.
+
+Stallman axloqiy mezon sifatida **Dasturiy ta'minotning to'rtta asosiy erkinligi**ni e'lon qildi:
+- **0-erkinlik:** Dasturni har qanday maqsadda (tijoriy, ta'limiy, shaxsiy) cheklovlarsiz ishga tushirish erkinligi.
+- **1-erkinlik:** Dasturning qanday ishlashini o'rganish (buning uchun manba kodi ochiq bo'lishi shart) va uni o'z ehtiyojlariga moslab o'zgartirish erkinligi.
+- **2-erkinlik:** Dastur nusxalarini ko'paytirish va qo'shnisiga yoki do'stiga erkin ulashish (yordam berish) erkinligi.
+- **3-erkinlik:** Dasturga kiritilgan o'zgartirishlar va yaxshilanishlarni butun jamiyat manfaati yo'lida ommaga tarqatish erkinligi.
+
+Agar dasturiy ta'minot foydalanuvchiga ushbu to'rtta erkinlikni bermasa, u Stallman ta'rificha **"noerkin" (unfree) yoki "zulmkor" (proprietary)** dasturdir. Chunki bunday dasturda foydalanuvchi dasturni emas, balki dasturning egasi foydalanuvchini o'z nazorati ostida ushlab turadi.
+
+## III. GNU loyihasining tug‘ilishi
+
+Erkin dasturiy ta'minot g'oyasi qanchalik ulug'vor bo'lmasin, uning ustida ishlaydigan kompyuterning o'zi yopiq tizimda ishlasa, barcha erkinliklar baribir yo'qqa chiqar edi. Erkin dastur erkin operatsion tizimga muhtoj edi. 
+
+Shu maqsadda, **1983-yil 27-sentabr** kuni Richard Stallman Usenet kompyuter tarmog'ining `net.unix-wizards` va `net.usoft` yangiliklar guruhlariga tarixiy maktub yo'lladi:
+> *"Men to'liq Unix bilan mos tushuvchi, GNU (GNU's Not Unix) deb ataladigan dasturiy tizimni yozishga kirishdim. Men buni har bir kompyuter foydalanuvchisi undan erkin foydalana olishi uchun qilmoqdaman... Boshlanishiga men yadro, barcha zaruriy utilitalar, kompilyator va qobiqni yarataman..."*
+
+Loyiha nomi qilib **GNU** tanlandi. Bu nom hackerlar an'anasiga ko'ra **rekursiv akronim** (o'z nomini o'zi takrorlovchi qisqartma) bo'lib, **"GNU's Not Unix"** ("GNU Unix emas") degan ma'noni anglatardi. Nega "Unix emas"? Chunki GNU Unixning arxitekturasini, buyruqlar tizimini va qulayligini meros qilib olsa-da, uning ichida AT&T ning biror qator mualliflik kodi bo'lmasligi, u noldan, toza vijdon bilan yozilishi shart edi. Shuningdek, ingliz tilida "Gnu" so'zi Afrika yovvoyi antilopasi (buqa-kiyik)ni anglatadi, shu bois loyihaning ramzi sifatida qudratli shoxlarga ega Gnu boshi tanlandi.
+
+1985-yilda Stallman o'zining mashhur **GNU Manifestosi**ni (*The GNU Manifesto*) e'lon qildi va loyihaning huquqiy hamda moliyaviy tayanchi sifatida **Erkin Dasturiy Ta'minot Jamg'armasi**ga (**Free Software Foundation — FSF**) asos soldi.
+
+GNU jamoasi oldida turgan vazifaning ko'lami aqlbovar qilmas darajada ulkan edi. Ular bir necha yil ichida bitta yirik korporatsiya emas, balki ko'ngillilar kuchi bilan yuzlab murakkab komponentlarni noldan yaratishlari kerak edi. Stallman va uning safdoshlari eng qiyin va eng fundamental qismlardan boshladilar:
+1. **GCC (GNU Compiler Collection / dastlab GNU C Compiler, 1987):** Dasturchilar uchun eng zarur asbob — kompilyator. Stallman tomonidan yaratilgan GCC C tilidagi kodni apparat mashina tiliga o'giruvchi eng ilg'or, tezkor va erkin vositaga aylandi. GCC bo'lmaganida, erkin dasturiy ta'minot harakati o'zining poydevoriga ega bo'lolmas edi.
+2. **GNU Emacs (1985):** Matn muharriri bo'lishdan tashqari, ichida Lisp dasturlash tili o'rnatilgan butun bir rivojlanish muhiti.
+3. **Bash (Bourne-Again Shell, Brian Fox, 1989):** Unixning an'anaviy `sh` qobig'ini o'rnini bosuvchi, har bir buyruqni boshqaruvchi erkin va baquvvat interfeys.
+4. **glibc (GNU C Library):** Har qanday dasturning operatsion tizim yadrosi bilan gaplashishini ta'minlovchi standart C kutubxonasi. Xotirani taqsimlash (`malloc`), fayllarni ochish (`open`), matnlarni qayta ishlash aynan shu kutubxona orqali amalga oshadi.
+5. **binutils va coreutils:** Tizimning kundalik ishlashi uchun zarur bo'lgan linker (`ld`), assembler (`as`) va yuzlab buyruqlar (`ls`, `cat`, `cp`, `mv`, `rm`, `grep`, `sed`, `tar`).
+
+1990-yillarning boshiga kelib, GNU loyihasi deyarli to'liq tayyor bo'ldi. Dasturchilar kompyuterda bemalol kod yozishi, fayllarni boshqarishi, dasturlarni kompilyatsiya qilishi mumkin edi. Ammo barcha narsa tayyor bo'lgan bu ulkan binoning eng muhim ustuni — **Yadro (Kernel)** yetishmayotgan edi. GNU ning o'z yadrosi — **GNU Hurd** ustida ishlar boshlangan bo'lsa-da, u arxitektura jihatidan nihoyatda murakkab mikroyadro (Mach) asosida qurilayotgani sababli juda sekin rivojlanar va kundalik foydalanishga mutlaqo yaramas edi.
+
+Mator bor, kuzov bor, g'ildiraklar bor, rul bor — ammo avtomobilni yurgizuvchi dvigatel yo'q edi. Dunyo o'sha dvigatelni kutayotgan edi.
+
+## IV. Linux kernelining paydo bo‘lishi
+
+Xuddi shu pallada, Yevropaning shimolida, Finlandiya poytaxti Xelsinki shahrida tarix charxpalagini butunlay o'zgartirib yuboradigan yana bir voqea pishib yetilayotgan edi. 
+
+Xelsinki universiteti kompyuter fanlari fakultetining 21 yoshli talabasi **Linus Torvalds** 1991-yilning boshida bo'lib to'lash sharti bilan yangi shaxsiy kompyuter — **Intel 80386** protsessoriga ega mashinani sotib oldi. Bu o'sha davr uchun inqilobiy chip edi: u 32-bitli to'liq arxitekturaga ega bo'lib, eng muhimi, unda apparat darajasidagi **xotira himoyasi (protected mode)** va sahifalash (paging) imkoniyatlari mavjud edi.
+
+Linus universitetda operatsion tizimlar fanini o'rganish uchun niderlandiyalik professor Andrew Tanenbaum tomonidan yozilgan **MINIX** operatsion tizimidan foydalanar edi. MINIX Unixga o'xshash bo'lsa-da, u faqat ta'limiy maqsadlar uchun yaratilgan, imkoniyatlari cheklangan va eng yomoni, Tanenbaum o'z tizimiga o'zgartirishlar kiritishni xohlamas edi. Linus MINIX ning terminal emulyatsiyasi va disk bilan ishlashidan qoniqmay, o'zining yangi 386 chipining imkoniyatlarini o'rganish uchun to'g'ridan-to'g'ri assembler va C tilida past darajadagi dasturlar yozishga kirishdi.
+
+Dastlab Linus shunchaki universitet kompyuterlariga modem orqali ulanish uchun terminal drayveri va fayllarni yuklab olish mexanizmini yozayotgan edi. Ammo u o'z kodi ichida jarayonlarni almashtirish (task switching) va diskdan o'qish funksiyalarini kiritgan sari, bu shunchaki tajriba emas, balki haqiqiy operatsion tizim yadrosiga aylanib borayotganini tushundi.
+
+**1991-yil 25-avgust** kuni Linus Torvalds MINIX foydalanuvchilarining `comp.os.minix` Usenet konferensiyasiga kompyuter tarixidagi eng mashhur xabarlardan birini qoldirdi:
+> *"Salom barchaga, kim MINIX ishlatayotgan bo'lsa!
+Men 386 (486) AT klonlari uchun bepul operatsion tizim yozmoqdaman (bu shunchaki bir xobbi, GNU kabi katta va professional bo'lmaydi). Bu loyiha apreldan buyon pishib yetilmoqda va endi sekin ishga tushishga tayyor. MINIX da odamlarga nimalar yoqishi yoki yoqmasligi haqidagi har qanday fikrlarni eshitishdan xursand bo'lardim..."*
+
+Linus bu loyihani o'z kompyuterida hazil tariqasida "Freax" (Free + Freak + X) deb atagan edi. Ammo Xelsinki Texnologiya Universitetining FTP serveri ma'muri Ari Lemmke Linusga fayllarni yuklash uchun ochilgan katalogga **"linux"** (Linus + Unix) nomini berdi. Shu tariqa, afsonaviy **Linux** nomi dunyoga keldi.
+
+1991-yil 17-sentabrda Linuxning **0.01 versiyasi** e'lon qilindi. Unda atigi **10 239 qator kod** bor edi, u faqat Intel 386 protsessoridagina ishlar, floppy disk drayveri va qattiq disk nazoratchisiga ega edi, xolos.
+
+Biroq eng hal qiluvchi burilish **1992-yil boshida (0.12 versiyasida)** yuz berdi. Dastlab Linus o'z tizimini "tijoriy maqsadlarda qayta sotish mumkin emas" degan cheklov bilan tarqatgan edi. Ammo GNU loyihasi va Richard Stallmanning erkin dasturiy ta'minot manifestidan ilhomlangan Linus Linux yadrosining litsenziyasini rasman **GNU General Public License 2-versiyasiga (GPLv2)** o'zgartirdi.
+
+Bu qadam Linuxning taqdirini hal qildi. GPLv2 litsenziyasi butun dunyo dasturchilariga xavfsizlik va adolat kafolatini berdi: har qanday kompaniya yoki ko'ngilli dasturchi Linux kodini bepul olishi, o'rganishi, o'zgartirishi mumkin, ammo agar u o'zgartirilgan tizimni tarqatsa, uning manba kodini ham GPL ostida butun insoniyatga ochib berishi shart edi! Hech kim boshqalarning mehnatini o'g'irlab, xususiy mulkiga aylantira olmasdi. 
+
+Natijada, butun dunyodan yuzlab, keyinchalik minglab iqtidorli muhandislar Linus atrofiga birlashdilar. Internet tarmog'i orqali har kuni yadroga yangi patchlar, tarmoq drayverlari, turli fayl tizimlari va apparat qo'llab-quvvatlashlari yog'ilib kela boshladi. Linux havaskor talabaning tajribasidan global miqyosdagi eng baquvvat yadroga aylandi.
+
+## V. GNU va Linux qanday birlashdi?
+
+1992-yilga kelib kompyuter olamida ajoyib bir tarixiy simbioz — ikki buyuk intellektual oqimning birlashuvi yuz berdi.
+
+Bir tomonda, Richard Stallman va GNU loyihasi deyarli barcha operatsion tizim qismlarini (kompilyator, qobiq, standart C kutubxonasi, yuzlab tizim utilitalarini) yaratib bo'lgan, ammo ularni harakatga keltiruvchi yadroga ega emas edi. Ikkinchi tomonda esa, Linus Torvalds yozgan Linux yadrosi tez sur'atlarda o'sib borayotgan, ammo uning o'zida birorta ham foydalanuvchi utilitasi, na buyruqlar qobig'i va na kompilyatori bor edi. Darhaqiqat, Linus Linux yadrosini yozish va uni kompilyatsiya qilish uchun aynan **GNU loyihasining GCC kompilyatori, GNU Bash va GNU utilitalari**dan foydalangan edi!
+
+Ushbu ikki qism bir-biriga qo'lqopdek tushdi:
+- **Linux** kompyuter apparat vositalarini boshqaruvchi **yadro (dvigatel)** bo'ldi.
+- **GNU** tizimning butun hayotiy qon tomirini — dasturlarni boshqarish, xotira bilan aloqa, buyruqlar interpretatsiyasi va foydalanuvchi muhitini ta'minlovchi **asosiy qatlam (userland)** bo'ldi.
+
+Mana shu ikki mustaqil loyihaning qo'shilishi natijasida insoniyat tarixida ilk bor **100 foiz erkin, to'liq mustaqil va ochiq manbali Unix-simon operatsion tizim** vujudga keldi.
+
+Biroq, bu birlashuv ortidan kompyuter hamjamiyatida 30 yildan buyon davom etib kelayotgan mashhur **"GNU/Linux nomlash bahsi"** (Naming controversy) kelib chiqdi.
+
+Richard Stallman va Free Software Foundation jamoatga shunday murojaat qildi:
+> *"Siz ishlatayotgan operatsion tizim faqat Linux emas. Linux — bu tizimning yadrosi, xolos. Tizimning asosiy arxitekturasi, uning utilitalari, kompilyatori, tizimli kutubxonalari va eng muhimi — uning ortidagi erkinlik falsafasi GNU loyihasiga tegishlidir. Shu bois, adolat yuzasidan ushbu tizimni **GNU/Linux** deb atash lozim."*
+
+Boshqa tomondan, ko'plab ommaviy axborot vositalari, tijoriy kompaniyalar (masalan, Red Hat) va Linus Torvaldsning o'zi qisqalik va qulaylik uchun butun tizimni shunchaki "Linux" deb atash amaliyotini afzal ko'rdilar. Linus Torvalds bu masalada pragmatik pozitsiyani egalladi: *"Men odamlarning tizimni nima deb atashiga qarshi emasman, ammo buni majburlash shart emas. Tizimni shunchaki Linux deb atash qisqa va qulayroq."*
+
+Xolis tahlil shuni ko'rsatadiki, ikkala tomonning ham o'ziga yarasha haqiqati bor:
+1. **Falsafiy va tarixiy haqiqat:** Stallman 100 foiz haq. Agar 1983-yilda GNU loyihasi boshlanmaganida, uning ulkan asboblar to'plami va GPL litsenziyasi bo'lmaganida, Linux hech qachon bugungi darajaga yetolmasdi. Butun tizimni shunchaki "Linux" deb atash GNU loyihasining 10 yillik qahramonona mehnatini va erkinlik falsafasini soya ostida qoldiradi.
+2. **Texnik rang-baranglik haqiqati:** Bugungi kunda barcha Linux-yadroli tizimlar ham GNU tizimi emas! Masalan, **Android** Linux yadrosidan foydalanadi, ammo unda bitta ham GNU komponenti yo'q (u Google tomonidan yozilgan Bionic kutubxonasi va Android muhitidan foydalanadi). Yoki kiberxavfsizlik va yengil konteynerlarda keng ishlatiladigan **Alpine Linux** GNU o'rniga *musl libc* va *BusyBox* vositalariga tayanadi.
+
+Shu sababli, ilmiy va texnik jihatdan to'g'ri formula quyidagichadir:
+- **Linux** — bu operatsion tizim yadrosi (Kernel).
+- **GNU** — bu erkin tizimli dasturlar to'plami.
+- **GNU/Linux** — Linux yadrosi va GNU dasturlari birlashuvidan hosil bo'lgan an'anaviy operatsion tizim muhiti (Debian, Ubuntu, Fedora, Arch Linux kabilar).
+
+## VI. Kernel ichida nimalar sodir bo‘ladi?
+
+Linux yadrosi — bu shunchaki bitta katta dastur emas, balki apparat vositalari bilan ilovalar o'rtasida soniyasiga millionlab operatsiyalarni mikrosekundlik aniqlikda muvofiqlashtiruvchi murakkab biologik organizmga o'xshash mexanizmdir. Keling, uning ichki anatomiyasini texnik jihatdan ko'rib chiqaylik.
+
+```
++-------------------------------------------------------------------+
+|                     FOYDALANUVCHI MAYDONI (USER SPACE)             |
+|   Brauzer, Matn muharriri, Nginx, Shell (Bash), Dasturlar         |
++-------------------------------------------------------------------+
+|               Standart C Kutubxonasi (glibc, musl)                |
++-------------------------------------------------------------------+
+                                 |  
+                       System Call Interfeysi (sys_call_table)
+                                 v  
++-------------------------------------------------------------------+
+|                        YADRO MAYDONI (KERNEL SPACE)                |
+|  +--------------------+  +-------------------+  +---------------+ |
+|  | Jarayonlar va Reja |  | Xotira Boshqaruvi |  | Virtual Fayl  | |
+|  | (Process / EEVDF)  |  | (Virtual Memory)  |  | Tizimi (VFS)  | |
+|  +--------------------+  +-------------------+  +---------------+ |
+|  +--------------------+  +-------------------+  +---------------+ |
+|  | Tarmoq Steki       |  | Xavfsizlik        |  | Qurilmalar    | |
+|  | (TCP/IP / Sockets) |  | (Capabilities)    |  | Drayverlari   | |
+|  +--------------------+  +-------------------+  +---------------+ |
++-------------------------------------------------------------------+
+                                 |
+                     Apparat ta'minoti drayverlari
+                                 v
++-------------------------------------------------------------------+
+|                  APPARAT TA'MINOTI (HARDWARE)                     |
+|           CPU, RAM, Qattiq disk / SSD, Tarmoq kartasi (NIC)       |
++-------------------------------------------------------------------+
+```
+
+### 1. Himoya halqalari: Kernel Mode va User Mode
+Zamonaviy protsessorlar apparat darajasida bir necha imtiyoz darajalariga (**Privilege Rings**) ega. x86 arxitekturasida bular Ring 0 dan Ring 3 gacha bo'lgan to'rtta halqadir:
+- **Ring 3 (User Mode):** Barcha oddiy dasturlar (brauzer, musiqa pleyeri, kompilyator) shu yerda ishlaydi. Bu rejimda dastur bevosita xotiraning boshqa qismlariga kira olmaydi va protsessorning maxsus boshqaruv registrlarini o'zgartira olmaydi.
+- **Ring 0 (Kernel Mode):** Yadro aynan shu yerda mutlaq hokimlik bilan ishlaydi. U apparatning barcha registrlariga, uzilishlariga va jismoniy xotira manzillariga to'g'ridan-to'g'ri buyruq bera oladi.
+
+Agar User Modeda ishlayotgan dastur xato qilib, o'ziga tegishli bo'lmagan xotira manziliga murojaat qilsa, apparat xotira nazoratchisi (MMU) darhol istisno (exception) uyg'otadi va yadro o'sha dasturni halokatli xato — **Segmentation Fault (`SIGSEGV`)** signali bilan to'xtatadi. Natijada xatolik butun kompyuterni qulatmaydi, faqat o'sha alohida ilovani yopadi.
+
+### 2. Tizimli chaqiruvlar (System Calls — syscalls)
+Agar ilova apparat bilan bevosita gaplasha olmasa, u qanday qilib diskdan fayl o'qiydi yoki ekranga ma'lumot chiqaradi? Buning uchun u yadroga murojaat qiladi. Bu mexanizm **System Call** (tizimli chaqiruv) deb ataladi.
+
+Linuxda 450 dan ortiq tizimli chaqiruvlar mavjud (masalan, `sys_read`, `sys_write`, `sys_open`, `sys_fork`, `sys_clone`). Dastur tizimli chaqiruv qilganda, u kerakli parametrlarni protsessor registrlariga (masalan, x86-64 da `rax`, `rdi`, `rsi`, `rdx`) joylaydi va maxsus apparat ko'rsatmasini (`syscall` yoki qadimgi x86 da `int 0x80`) bajaradi. Protsessor bir zumda Ring 3 dan Ring 0 ga sakraydi, yadro o'zining **syscall_table** jadvali orqali so'ralgan funksiyani bajaradi, natijani registrga yozadi va protsessorni yana xavfsiz User Mode rejimiga qaytaradi.
+
+### 3. Jarayonlar va Oqimlar: task_struct va Rejalashtiruvchi (Scheduler)
+Linux yadrosida jarayon (process) va oqim (thread) tushunchalari o'rtasida boshqa operatsion tizimlardagidek sun'iy keskin chegara yo'q. Yadro uchun har bir ijro birligi — bu **vazifa (task)** bo'lib, C tilida ulkan **`struct task_struct`** strukturasi orqali ifodalanadi. Ushbu struktura jarayonning barcha xususiyatlarini: PID raqami, ochiq fayllar ro'yxati, xotira xaritasi, signal boshqaruvi va ustuvorlik darajasini o'z ichiga oladi.
+
+Yangi jarayon yaratish uchun `fork()` chaqiriladi. Oqim (thread) yaratish uchun esa `clone()` chaqiruvi maxsus bayroqlar bilan ishlatiladi: masalan, `CLONE_VM` bayrog'i yangi vazifaga ota jarayonning operativ xotirasini birgalikda bo'lishish imkonini beradi.
+
+Zamonaviy kompyuterlarda yuzlab jarayonlar bir vaqtning o'zida ishlashi kerak. Ularni protsessor yadrolariga kim taqsimlaydi? Buni yadroning **Rejalashtiruvchisi (CPU Scheduler)** amalga oshiradi. Uzoq yillar davomida Linux Ingo Molnar tomonidan yaratilgan **CFS (Completely Fair Scheduler)** rejalashtiruvchisidan foydalandi. CFS qizil-qora daraxtlar (Red-Black Tree) algoritmi yordamida har bir jarayonga adolatli virtual ijro vaqti (`vruntime`) ajratar edi. 2023-yil oxirida, Linux 6.6 versiyasidan boshlab esa uning o'rniga Peter Zijlstra boshchiligida yanada ilg'or **EEVDF (Earliest Eligible Virtual Deadline First)** algoritmi kiritildi. EEVDF kechikishlarga o'ta sezgir vazifalarni (masalan, audio yoki o'yin jarayonlarini) birinchi navbatda past kechikish bilan bajarish imkoniyatini beradi.
+
+### 4. Virtual xotira va Sahifalash (Paging)
+Hech qachon o'ylab ko'rganmisiz: nega kompyuteringizda bor-yo'g'i 8 GB operativ xotira (RAM) bo'lsa-da, siz bir vaqtning o'zida har biri 2-3 GB xotira talab qiladigan o'nlab dasturlarni bemalol ishlatishingiz mumkin?
+
+Buning sababi — **Virtual xotira tizimi**dir. Linuxda har bir dastur o'zini butun kompyuter xotirasining (masalan, 64-bitli tizimda 128 Terabaytlik xayoliy maydonning) yagona egasidek his qiladi. Dastur ishlatadigan manzillar — bu **virtual manzillardir**. Yadro protsessorning apparat **MMU (Memory Management Unit)** bloki bilan birgalikda bu virtual manzillarni **Page Tables (sahifalar jadvali)** orqali jismoniy operativ xotiraga xaritalab beradi.
+
+Xotira standart **4 Kilobaytlik** bo'laklarga — **sahifalarga (Pages)** bo'linadi. Agar dastur yangi xotira so'rasa (`malloc` orqali), yadro unga darhol jismoniy xotira ajratmaydi! U faqat virtual manzil beradi. Dastur qachonki o'sha xotiraga birinchi marta nimadir yozishga uringan daqiqada, apparat **Page Fault (Sahifa xatosi)** uzilishini beradi. Yadro bir soniyaning mingdan bir ulushida uyg'onadi, bo'sh jismoniy sahifani topadi, jadvalga yozadi va dastur ishini sezilarsiz davom ettiradi. Bu ajoyib mexanizm **Demand Paging (Talab bo'yicha sahifalash)** deb ataladi. Agar jismoniy RAM to'lib qolsa, yadro kam ishlatilayotgan sahifalarni diskdagi maxsus hududga (**Swap**) ko'chirib turadi.
+
+### 5. Virtual fayl tizimi (Virtual File System — VFS)
+Unixning eng buyuk tamoyillaridan biri: **"Hamma narsa fayldir" (Everything is a file)**.
+Diskdagi oddiy matn ham, fleshkadagi rasm ham, tarmoq soketi ham, hatto klaviatura, sichqoncha va qattiq diskning o'zi ham (`/dev/sda`) fayl sifatida ko'rinadi.
+
+Buni ta'minlash uchun Linux yadrosida **VFS (Virtual File System)** qatlami ishlaydi. Siz dasturingizda oddiygina `read()` yoki `write()` buyrug'ini chaqirasiz. Tagida qanday fayl tizimi turgani — tezkor **ext4**mi, zamonaviy **btrfs**mi, serverlar uchun **xfs**mi, tarmoq orqali ulangan **NFS**mi yoki operativ xotiradagi psevdo-fayllar (`/proc` va `/sys`)mi — dastur uchun mutlaqo ahamiyatsizdir. VFS to'rtta asosiy ob'ekt: **superblock** (fayl tizimi metama'lumotlari), **inode** (faylning o'lchami, egasi va bloklari haqidagi ma'lumot), **dentry** (kataloglar daraxti va fayl nomlari) va **file** (ochilgan fayl deskriptori) orqali barcha fayl tizimlari uchun yagona standart interfeysni taqdim etadi.
+
+## VII. Linux kernel arxitekturasi
+
+Operatsion tizimlar nazariyasida yadrolarni qurishning ikki asosiy fundamental maktabi mavjud bo'lib, bu borada 1990-yillarning boshida kompyuter olamidagi eng shov-shuvli intellektual janglardan biri yuz bergan edi.
+
+Bu ikki yondashuv quyidagilardir:
+
+1. **Monolit yadro (Monolithic Kernel):**
+   Yadroning barcha asosiy vazifalari — jarayonlarni rejalashtirish, xotirani boshqarish, barcha qurilmalar drayverlari, fayl tizimlari va tarmoq steki bitta ulkan dasturiy blok sifatida birlashgan bo'lib, umumiy imtiyozli xotira maydonida (Ring 0) ishlaydi. 
+   - **Afzalligi:** Mislsiz yuqori tezlik! Chunki quyi tizimlar o'rtasida ma'lumot almashish uchun og'ir kontekst almashinuvlari (context switch) kerak emas; bir komponent ikkinchisini to'g'ridan-to'g'ri C tilidagi oddiy funksiya chaqiruvi orqali bir necha protsessor taktida ishga tushiradi.
+   - **Xavfi:** Agar yadro ichidagi birorta drayverda (masalan, notanish Wi-Fi drayverida) jiddiy xato bo'lsa yoki u noto'g'ri xotiraga murojaat qilsa, bu butun boshli yadroni falaj qilishi va **Kernel Panic** keltirib chiqarishi mumkin.
+
+2. **Mikroyadro (Microkernel):**
+   Yadro ichida faqatgina eng zarur, eng minimal vositalar — xotirani dastlabki manzillash, oqimlarni rejalashtirish va jarayonlararo xabar almashinuvi (IPC — Inter-Process Communication) qoldiriladi. Qolgan barcha narsalar — fayl tizimlari, qurilmalar drayverlari, tarmoq steki — oddiy foydalanuvchi maydonida (User Mode, Ring 3) alohida mustaqil server-jarayonlar sifatida ishlaydi. Masalan, MINIX, Mach, QNX, seL4 shunday qurilgan.
+   - **Afzalligi:** Yuksak barqarorlik va xavfsizlik. Agar fayl tizimi drayveri qulab tushsa, yadro o'lmaydi; u shunchaki o'sha jarayonni qaytadan ishga tushiradi.
+   - **Kamchiligi:** Juda yuqori unumdorlik yo'qotilishi. Chunki diskdan bitta bayt o'qish uchun protsessor bir necha marta User Mode va Kernel Mode o'rtasida xabarlarni nusxalashi, xotira jadvallarini yangilashi (TLB flush) kerak bo'ladi.
+
+1992-yilning 29-yanvarida MINIX asoschisi, mashhur professor **Andrew Tanenbaum** `comp.os.minix` guruhida **"LINUX is obsolete"** ("Linux eskirgan") degan sarlavha ostida maqola e'lon qildi. Tanenbaumning asosiy da'vosi shunday edi:
+> *"1991-yilda monolit yadro yozish — bu 1970-yillarning eskirgan g'oyalariga qaytishdir. Hozir barcha zamonaviy operatsion tizimlar mikroyadro asosida qurilmoqda. Agar siz operatsion tizimlar bo'yicha mening talabam bo'lganingizda, monolit yadro yozganingiz uchun sizga 'qoniqarsiz' baho qo'ygan bo'lardim."*
+
+Linus Torvalds bunga o'ziga xos o'tkir kinoya va amaliy realizm bilan javob qaytardi:
+> *"Ha, nazariy jihatdan mikroyadro go'zal ko'rinishi mumkin. Ammo haqiqiy muhandislik nazariyaga emas, balki real apparatda qanday ishlashiga qarab baholanadi. Mikroyadrolar juda sekin, ularning xabar almashinuvi ulkan xarajat talab qiladi. Linux bugun ishlayapti va u tez ishlayapti!"*
+
+Vaqt kim haq ekanini ko'rsatdi. GNU loyihasining o'z mikroyadroli tizimi (GNU Hurd) 30 yil o'tib ham real hayotda keng qo'llanilmaydigan akademik loyiha bo'lib qolgan bir paytda, Linux butun dunyo serverlari va superkompyuterlarini zabt etdi.
+
+Biroq, Linux oddiy, qotib qolgan monolit emas. Linus Torvalds va hamjamiyat unga **Modulli monolit (Modular Monolithic)** arxitekturasini joriy qildilar. Bu degani:
+- Tizim yadrosi monolitik tezlikda ishlaydi.
+- Ammo kerakli drayverlar, yangi fayl tizimlari yoki tarmoq protokollari butun yadroni qaytadan kompilyatsiya qilmasdan, kompyuter ishlab turgan vaqtda dinamik ravishda **Yuklanuvchi Yadro Modullari (Loadable Kernel Modules — LKM)** sifatida xotiraga yuklanishi (`modprobe`, `insmod`) yoki xotiradan chiqarib tashlanishi mumkin.
+
+Shunday qilib, Linux monolitning chaqqon tezligini mikroyadroning moslashuvchanligi bilan muvaffaqiyatli birlashtira oldi.
+
+## VIII. GNU/Linux distributivlari
+
+Ko'pincha odamlar: *"Men Linux o'rnatmoqchiman, qaysi birini tanlay?"* deb so'rashadi. Aslida esa hech kim "shunchaki Linux"ni o'rnatolmaydi. Foydalanuvchi har doim muayyan bir **Distributiv (Distribution yoki qisqacha Distro)**ni o'rnatadi.
+
+Xo'sh, **Distributiv nima?**
+Distributiv — bu Linux yadrosi, GNU tizimli dasturlari, boshlang'ich yuklash tizimi (Init system), paketlar menejeri (Package Manager), grafik ish stoli muhiti (Desktop Environment) va minglab amaliy ilovalarning yaxlit, o'rnatishga tayyor holga keltirilgan to'plamidir.
+
+Distributivning arxitekturasini quyidagi zanjir sifatida tasavvur qilish mumkin:
+1. **Linux Kernel:** Tizimning yuragi.
+2. **GNU Core Components:** glibc, bash, coreutils, gcc.
+3. **Init tizimi (PID 1):** Kompyuter yoqilganda yadrodan keyin birinchi bo'lib ishga tushadigan va barcha xizmatlarni (tarmoq, foydalanuvchi sessiyasi, drayverlar) ko'taruvchi boshqaruvchi. Bugungi kunda deyarli barcha yirik distributivlarda **systemd** standarti o'rnatilgan (ayrim an'anaviy tizimlar *OpenRC, runit* yoki *SysVinit* ishlatadi).
+4. **Paketlar menejeri:** Dasturlarni internet omborlaridan (repository) avtomatik yuklab oluvchi, yangilovchi va o'chiruvchi tizim.
+5. **Grafik displey serveri va Ish stoli:** Wayland yoki X11 protokollari ustida ishlovchi **GNOME, KDE Plasma, XFCE** kabi grafik qobiqlar.
+
+Dunyo bo'ylab yuzlab distributivlar mavjud, ammo ularning 95 foizi bir necha buyuk mustaqil **"ona distributivlar"** oilasiga borib taqaladi:
+
+### 1. Debian oilasi
+1993-yilda marhum Ian Murdock tomonidan asos solingan **Debian** — erkin dasturiy ta'minot olamining eng mustahkam qoyasidir. Debian to'laligicha ko'ngillilar hamjamiyati tomonidan boshqariladi va o'zining "Debian Ijtimoiy Shartnomasi"ga qat'iy amal qiladi. Uning paketlar tizimi (`.deb` va `apt`) afsonaviy barqarorlikka ega.
+- **Ubuntu:** 2004-yilda Mark Shuttleworth tomonidan Debian asosida yaratilgan bo'lib, Linuxni keng ommaga, shaxsiy kompyuterlarga olib kirdi. U apparat drayverlarini avtomatik sozlash va o'rnatish qulayligi bilan mashhur.
+- **Linux Mint:** Yangi boshlovchilar uchun Windowsdan o'tishda eng qulay, xushbichim Cinnamon ish stoliga ega o'ta barqaror tizim.
+
+### 2. Red Hat / Fedora oilasi
+Korporativ dunyo va enterprise serverlar standarti. Ular `.rpm` paketlari va `dnf` menejeridan foydalanadi.
+- **Fedora:** Eng yangi texnologiyalar (Wayland, PipeWire, zamonaviy kernel imkoniyatlari) sinovdan o'tadigan, dasturchilar uchun nihoyatda qulay va ilg'or erkin tizim.
+- **RHEL (Red Hat Enterprise Linux):** Banklar, birjalar, aviakompaniyalar va yirik korporatsiyalar tayanadigan 10 yillik kafolatlangan barqarorlikka ega tijoriy tizim.
+
+### 3. Arch Linux oilasi
+**"KISS" (Keep It Simple, Stupid)** tamoyiliga asoslangan, ilg'or dasturchilar va tizim ma'murlari sevadigan tizim. Archda tayyor o'rnatish dasturi yo'q: foydalanuvchi qora ekranda diskni o'zi bo'ladi, yadroni o'zi tanlaydi va o'ziga kerak bo'lgan g'ishtlardan o'z operatsion tizimini o'zi quradi.
+- Uning eng katta kuchi — **Rolling Release** modeli (tizimni har 6 oyda qayta o'rnatish shart emas, paketlar har kuni eng so'nggi versiyaga yangilanadi) va butun dunyo dasturchilari tomonidan to'ldiriladigan bepoyon **AUR (Arch User Repository)** omboridir.
+
+### 4. Qat'iy erkin (FSF tomonidan tan olingan) distributivlar
+Oddiy distributivlar (hatto Debian yoki Fedora ham) apparat vositalari yaxshi ishlashi uchun yadro ichida ishlab chiqaruvchilarning yopiq binar mikrokodlariga (**proprietary firmware blobs**) ruxsat beradi. 
+Ammo FSF tomonidan rasman tan olingan distributivlar — **Trisquel, Guix System, Parabola** kabi tizimlar to'liq tozalangan **Linux-libre** yadrosidan foydalanadi. Ularda bitta ham yopiq qator kod bo'lishi mumkin emas.
+
+Nima uchun bitta Linux yadrosi asosida bunchalik xilma-xil tizimlar yaratish mumkin? Chunki GNU/Linux modulli va erkindir. Har bir jamoa o'z ehtiyojiga qarab, xohlasa minimal 10 megabaytlik router tizimini, xohlasa go'zal dizaynerlik stansiyasini, xohlasa kiberxavfsizlik poligoni (Kali Linux)ni yaratish huquqiga egadir.
+
+## IX. Linux kernel qanday rivojlantiriladi?
+
+Bugungi kunda Linux yadrosi 35 milliondan ortiq kod qatoriga ega bo'lib, u insoniyat tarixidagi eng yirik ochiq muhandislik loyihasidir. Xo'sh, butun dunyoga tarqalgan minglab bir-birini tanimaydigan dasturchilar qanday qilib bir vaqtning o'zida yagona tizim ustida tartibsizliksiz ishlay oladilar?
+
+Bu ulkan jarayon qat'iy yo'lga qo'yilgan iyerarxiya va ishlab chiqish madaniyatiga tayanadi:
+
+### 1. Ishonch iyerarxiyasi (Trust Network)
+Eng yuqori cho'qqida hamon **Linus Torvalds** turadi. U butun tizimning yakuniy hakamidir. Ammo Linus har kuni millionlab qator kodni o'zi tekshirmaydi.
+Yadro yuzlab quyi tizimlarga (Subsystems) bo'lingan: xotira boshqaruvi, tarmoq drayverlari, USB steki, ARM arxitekturasi va h.k. Har bir quyi tizimning o'z **Subsystem Maintainer**i (mas'ul koordinatori) bor. Masalan, Greg Kroah-Hartman USB va barqaror relizlar uchun mas'ul, David Miller va Jakub Kicinski tarmoq uchun javobgar.
+
+Oddiy dasturchi o'z patchini (o'zgartirishini) bevosita Linusga yubormaydi. U patchni tegishli quyi tizim mas'uliga jo'natadi. Quyi tizim boshqaruvchilari kodni obdon tekshirib, sinovdan o'tkazib, o'z shoxchalariga qabul qiladilar va faqat shundan keyingina Linusga **Pull Request** yuboradilar.
+
+### 2. LKML va Pochta madaniyati
+Zamonaviy dasturchilar GitHub yoki GitLab tugmalariga o'rganib qolgan bir paytda, Linux yadrosi hamon o'zining an'anaviy, vaqt sinovidan o'tgan vositasiga — **LKML (Linux Kernel Mailing List)** elektron pochta yozishmalariga tayanadi.
+Patchlar maxsus formatda (`git format-patch`) elektron xat matnida ochiq yuboriladi. Dunyoning eng kuchli arxitektorlari xat ostida har bir kod qatorini, har bir o'zgaruvchi nomini ommaviy ravishda sinchiklab, ba'zan o'ta shafqatsiz tanqidiy tahlil (Code Review) qiladilar. Bu ochiq muhokama professional etikaning va kod sifatining eng oliy kafolatidir.
+
+### 3. Gitning tug'ilishi (2005)
+Ushbu ulkan rivojlanish jarayoni o'z davrida yana bir texnologik inqilobga sabab bo'ldi. 2002–2005-yillarda Linux yadrosi BitKeeper nomli xususiy versiya boshqaruvi tizimidan foydalanar edi. 2005-yilda litsenziya bo'yicha ziddiyat kelib chiqqach, Linus Torvalds mavjud barcha versiya boshqaruvi tizimlari (CVS, SVN) Linuxning ulkan sur'atiga mutlaqo yaroqsiz ekanini tushundi.
+
+Linus yadro ishini ikki haftaga to'xtatdi va o'z xonasiga qamalib, noldan yangi taqsimlangan tizim — **Git**ni yozib chiqdi! Gitning har bir commitni kriptografik SHA-1 xeshi bilan bog'lashi, tezkor shoxlanish (branching) va markazlashtirilmagan tarmoq modeli aynan Linux yadrosining ehtiyojlari uchun yaratilgan edi. Bugun butun dunyo dasturchilari ishlatayotgan Git — Linux loyihasining dunyoga bergan ulkan qo'shimcha tuhfasidir.
+
+### 4. Relizlar davriyligi (Release Cycle)
+Linux yadrosi qat'iy poyezd jadvalidek ishlaydi:
+- Har **9–10 haftada** yangi rasmiy yadro relizi chiqadi.
+- Yangi reliz chiqqan kuni **2 haftalik "Merge Window"** ochiladi: bu vaqtda Linus navbatdagi versiya uchun yangi funksiyalarni qabul qiladi.
+- 2 haftadan so'ng qabul to'xtatiladi va birinchi **Release Candidate (rc1)** chiqadi.
+- Keyingi 7–8 hafta davomida yangi narsa qo'shilmaydi, faqatgina xatolar tuzatiladi (rc2, rc3... rc7/rc8).
+- Tizim to'liq barqarorlashgach, Linus yakuniy versiyani e'lon qiladi va sikl qaytadan boshlanadi.
+- Korporatsiyalar va apparat ishlab chiqaruvchilar uchun **LTS (Long Term Support)** relizlari tanlab olinadi va ular Greg Kroah-Hartman jamoasi tomonidan 2 yildan 6 yilgacha xavfsizlik yangilanishlari bilan ta'minlab turiladi.
+
+### 5. Kimlar hissa qo'shadi?
+Ko'pchilik Linuxni faqat xonasida kechalari uxlamay kod yozadigan havaskorlar yaratadi deb o'ylaydi. Bu romantik tasavvur 1990-yillarda haqiqat bo'lgan bo'lishi mumkin, ammo bugun Linux — eng yirik jahon texnologiya gigantlarining umumiy hamkorlik maydonidir.
+Linux Jamg'armasi (Linux Foundation) hisobotlariga ko'ra, yadroga kiritilayotgan kodlarning **80–85 foizi professional, maosh oluvchi muhandislar** tomonidan yoziladi. Eng yirik hissa qo'shuvchilar: **Intel, AMD, Red Hat (IBM), Google, Meta, Linaro, Amazon, Samsung, Oracle** va boshqalar.
+
+Nega bu ashaddiy raqobatchi kompaniyalar yagona yadroga milliardlab dollar sarflaydilar? Chunki umumiy poydevorni birgalikda yaratish har bir kompaniya uchun o'zining xususiy tizimini noldan yozishdan yuz chandon arzon va ishonchlidir. GPLv2 litsenziyasi esa hech bir kompaniya bu umumiy boylikni o'zlashtirib ololmasligini kafolatlaydi.
+
+## X. GNU/Linux kundalik hayotimizda
+
+Biz yashayotgan XXI asr raqamli sivilizatsiyasini GNU/Linuxsiz tasavvur etib bo'lmaydi. U o'zining ko'rinmas poydevori bilan zamonaviy dunyoning deyarli barcha sohalarini o'z quchog'iga olgan:
+
+### 1. Bulutli infratuzilma va Serverlar
+Internetning 90 foizdan ortiq qismi Linuxda ishlaydi. Dunyodagi barcha yirik qidiruv tizimlari (Google, DuckDuckGo), ijtimoiy tarmoqlar (Meta, X, Telegram), video platformalar (YouTube, Netflix) millionlab Linux serverlari klasterlarida aylanadi. Hatto Microsoft kompaniyasining o'z Azure bulutli platformasidagi virtual mashinalarning yarmidan ko'pi Windows emas, aynan Linuxda ishlaydi!
+
+### 2. Superkompyuterlar
+Dunyo fanining eng ilg'or marralari — ob-havoni global modellashtirish, yangi dori vositalarini yaratish, kvant fizikasi va yadroviy sintez tahlillari superkompyuterlarda amalga oshiriladi.
+Dunyodagi eng tezkor 500 ta superkompyuter reytingini yurituvchi **TOP500** ro'yxatiga nazar tashlasangiz, hayratlanarli faktga guvoh bo'lasiz: **ro'yxatdagi superkompyuterlarning roppa-rosa 100 foizi Linuxda ishlaydi!** Dunyoda bitta ham Windows yoki boshqa tizimda ishlaydigan top-darajadagi superkompyuter qolmagan. Linuxning apparat resurslaridan maksimal siqib chiqarish qobiliyatiga hech bir xususiy tizim teng kela olmadi.
+
+### 3. Android va Linux: Nozik chegara
+Dunyodagi 3 milliarddan ortiq smartfon va planshetlar **Android** operatsion tizimida ishlaydi. Androidning asosida aynan Linux yadrosi yotadi: u protsessor quvvatini boshqarish, xotira ajratish, xavfsizlik izolyatsiyasi va drayverlar uchun xizmat qiladi.
+Biroq, avval ta'kidlaganimizdek, **Android GNU/Linux emas!**
+Google Androidda GNU ning barcha komponentlarini (glibc, coreutils, bash) o'zining engilroq va boshqa litsenziyadagi (Apache 2.0) komponentlariga — **Bionic libc**, **Toybox** va **ART (Android Runtime)** virtual mashinasiga almashtirgan. Shu sababli Android Linux yadroli tizim hisoblansa-da, u an'anaviy GNU/Linux ekotizimidan butunlay farq qiluvchi mustaqil platformadir.
+
+### 4. O'rnatilgan tizimlar (Embedded), IoT va Avtomobillar
+Uyingizdagi Wi-Fi router (TP-Link, Asus, MikroTik) ichida ixchamlashtirilgan Linux (masalan, OpenWrt) aylanib turadi. Aqlli televizorlar (LG webOS, Samsung Tizen), avtomobillarning multimedia va avtopilot bort kompyuterlari (Tesla, Automotive Grade Linux a'zolari Toyota, Mercedes-Benz) aynan Linuxga tayanadi.
+
+### 5. Kosmos fathi
+Linux Yerdan tashqariga ham chiqib ulgurdi. NASAning Mars sayyorasidagi mashhur **Perseverance** marsoxodi va Qizil sayyora osmonida ilk bor parvoz qilgan **Ingenuity vertolyoti** aynan Linux yadrosi va ochiq kodli F' (F Prime) freymvorki boshqaruvi ostida faoliyat yuritmoqda. Xalqaro Kosmik Stantsiyaning (ISS) asosiy boshqaruv noutbuklari ham to'liq barqarorlik uchun Linuxga o'tkazilgan.
+
+### 6. Shaxsiy kompyuterlar va O'yin sanoatidagi inqilob
+Uzoq yillar davomida shaxsiy kompyuterlar (Desktop) Linuxning eng zaif nuqtasi hisoblanardi. Biroq so'nggi yillarda bu yerda chinakam inqilob yuz berdi. Valve kompaniyasi o'zining portativ o'yin kompyuteri — **Steam Deck**ni Arch Linux asosidagi **SteamOS** tizimida chiqardi. Valve tomonidan moliyalashtirilgan **Proton (Wine va DXVK asosida)** texnologiyasi Windows uchun yozilgan eng og'ir zamonaviy 3D o'yinlarni (DirectX 11/12) hech qanday tezlik yo'qotishisiz Linuxda (Vulkan API orqali) to'g'ridan-to'g'ri ishga tushirish imkonini berdi. Natijada Linux geymerlar va ijodkorlar uchun ham to'laqonli, qulay boshpanaga aylanib bormoqda.
+
+## XI. Erkin dasturiy ta’minot falsafasi
+
+GNU/Linux hodisasini faqat texnik muvaffaqiyat deb bilish uning asl mohiyatini tushunmaslik bo'lar edi. Uning tomirlarida g'oyat chuqur ijtimoiy-axloqiy falsafa yotadi.
+
+Ushbu falsafiy maydonda ikkita asosiy oqim mavjud bo'lib, ularning farqini anglash o'ta muhimdir:
+
+### 1. Free Software (Erkin Dasturiy Ta'minot — FSF)
+Richard Stallman tomonidan asos solingan bu harakat dasturiy ta'minotni **ijtimoiy erkinlik va inson huquqlari** masalasi deb biladi. 
+Bu yerda "Free" so'zi tekinlikni emas, **ozodlikni** (*Free speech, not free beer*) anglatadi. FSF nuqtai nazaridan, o'z foydalanuvchisini dastur kodini ko'rishdan mahrum qiluvchi har qanday yopiq tizim inson sha'niga va erkinligiga qilingan tajovuzdir. Agar foydalanuvchi kompyuter nima qilayotganini tekshira olmasa, kompyuter foydalanuvchiga emas, balki tizim egasiga xizmat qilayotgan bo'ladi (josuslik, telemetriya, majburiy cheklovlar aynan shundan kelib chiqadi).
+
+### 2. Open Source (Ochiq Kodli Dasturiy Ta'minot — OSI)
+1998-yilda Eric S. Raymond, Bruce Perens va Tim O'Reilly tomonidan asos solingan bu oqim Stallmanning qat'iy axloqiy ritorikasidan biroz chetlashib, masalaga **pragmatik va biznes samaradorligi** nuqtai nazaridan yondashdi.
+Raymond o'zining mashhur *"Sobor va Bozor"* (*The Cathedral and the Bazaar*) essesida isbotlab berganidek, dastur kodining ochiq bo'lishi axloqiy jihatdan to'g'ri bo'lishidan tashqari, **amaliy jihatdan ancha sifatliroq, xavfsizroq va arzonroq dastur yaratish usulidir**. Minglab ko'zlar kodni ko'rib tursa, xatolar tezroq topiladi va tuzatiladi.
+
+### 3. Copyleft va Litsenziyalar jangi
+Erkinlikni qanday himoya qilish kerak? An'anaviy mualliflik huquqi (Copyright) asarni nusxalash va o'zgartirishni taqiqlaydi. Richard Stallman bu tushunchani teskarisiga o'girdi va **Copyleft** tushunchasini ixtiro qildi.
+Copyleftning quroli — **GNU General Public License (GPL)** litsenziyasidir. GPL ning bosh qoidasi shunday: *"Siz bu dasturdan xohlagancha foydalanishingiz mumkin, ammo agar unga o'zgartirish kiritib tarqatsangiz, o'zgartirilgan versiyangiz ham xuddi shunday to'liq erkin bo'lishi shart!"* Bu qoida dasturiy erkinlikni "virusdek" yuqumli qiladi va yirik kompaniyalarning ochiq kodni yutib, yopiq qilib sotishiga yo'l qo'ymaydi.
+
+Bunga qarama-qarshi o'laroq, **Permissive (Ruxsat beruvchi)** litsenziyalar mavjud: **MIT, BSD, Apache 2.0**. Bu litsenziyalar kodni olib, xohlasa yopiq tijoriy mahsulot ichiga tiqib sotishga ham ruxsat beradi (masalan, Apple o'zining macOS tizimida ochiq BSD tizimi kodlaridan bemalol foydalangan, ammo o'z kodlarini ommaga ochmagan).
+
+### 4. Ochiq kod har doim xavfsizlik kafolatimi?
+Ochiq kod tarafdorlari ko'pincha **"Linus qonuni"**ni keltiradilar: *"Yetarlicha ko'zlar bo'lsa, barcha xatolar yuzada bo'ladi"* (*Given enough eyeballs, all bugs are shallow*). 
+Biroq so'nggi yillardagi real hodisalar shuni ko'rsatdiki, kodning ochiqligi avtomatik ravishda uning mutlaq xavfsizligini anglatmaydi:
+- **Heartbleed (2014):** Butun dunyo internetining shifrlashini ta'minlovchi OpenSSL kutubxonasida oddiy xotira tekshiruvi xatosi ikki yil davomida hech kim tomonidan payqamay kelingan.
+- **Log4Shell (2021):** Millionlab korporativ serverlarda ishlatiladigan Java kutubxonasidagi kritik zaiflik.
+- **XZ Utils orqa eshigi (2024-yil mart):** "Jia Tan" laqabli sirli xaker ikki yil davomida o'zini ishonchli yordamchi sifatida ko'rsatib, charchagan yagona maintainerning ishonchiga kirib, Linux tizimlarining SSH xizmatiga o'ta ayyorona yashirin "orqa eshik" (backdoor) kiritishga muvaffaq bo'lgan (bu fitna Microsoft muhandisi Andres Freund tomonidan tasodifiy mikrosekundlik kechikishni tekshirish chog'ida fosh etildi).
+
+Demak, erkinlik va ochiqlik — bu sehrli tayoqcha emas. U doimiy insoniy hushyorlikni, jamoaviy auditni va ochiq loyihalarni moddiy-ma'naviy qo'llab-quvvatlashni talab qiluvchi uzluksiz jarayondir.
+
+## XII. GNU/Linuxning kuchli va zaif tomonlari
+
+Har qanday yetuk texnologiya kabi, GNU/Linux ham mutlaq mukammal emas. U o'zining mislsiz kuchli tomonlari bilan bir qatorda, muayyan sohalarda jiddiy cheklovlar va og'riqli muammolarga ham ega.
+
+### Kuchli tomonlari:
+1. **Mislsiz barqarorlik va ishonchlilik:** Linux serverlari yillab, hatto o'n yillab qayta ishga tushirilmasdan (zero-reboot) uzluksiz ishlashi mumkin. Xotiraning oqib ketishi (memory leak) va tizimning vaqt o'tishi bilan sekinlashishi Linuxga xos emas.
+2. **Mutlaq nazorat va moslashuvchanlik:** Tizimda foydalanuvchidan yashirin hech qanday "qora quti" yo'q. Istalgan konfiguratsiya oddiy matnli fayllar (`/etc`) orqali boshqariladi. Siz tizimni 10 Megabaytlik ixcham serverdan tortib 100 terabaytlik xotiraga ega klastergacha o'zingiz xohlagandek qura olasiz.
+3. **Shaffoflik va Maxfiylik:** Tizim sizning klaviaturangizda nima terayotganingizni yashirincha kuzatmaydi, profilingizni yaratmaydi va reklamachilarga sotmaydi. Tizim to'liq sizga tegishlidir.
+4. **Resurs tejamkorligi:** 10-15 yil avval chiqarilgan, Windows 11 umuman o'rnatib bo'lmaydigan eski kompyuterlar yengil GNU/Linux distributivlari (masalan, XFCE yoki LXQt bilan) ostida ikkinchi yoshligini yashaydi va zamonaviy vazifalarni bemalol bajaradi.
+
+### Zaif tomonlari va To'siqlar:
+1. **Apparat ta'minoti va drayverlar muammosi:** Ko'plab yirik noutbuk va periferiya ishlab chiqaruvchilari (ayniqsa Wi-Fi chiplari, barmoq izi skanerlari va quvvat boshqaruvi) o'z drayverlarini faqat Windows uchun yozadilar. Linux hamjamiyati bu drayverlarni teskari muhandislik (reverse engineering) orqali noldan yozishga majbur bo'ladi. Ayniqsa, **NVIDIA** kompaniyasining yopiq drayverlari Linux ish stoli muhitlarida (Wayland o'tishida) uzoq yillar davomida ko'plab boshog'riqlarga sabab bo'lib keldi (Linus Torvaldsning 2012-yilda NVIDIA ga qaratilgan mashhur jahldor munosabati bejiz emas edi).
+2. **Maxsus tijoriy dasturlarning yo'qligi:** Ko'plab professional sohalarda (masalan, poligrafiya, professional video montaj, arxitektura) sanoat standarti bo'lgan dasturlar — **Adobe Creative Cloud (Photoshop, Premiere, Illustrator), Microsoft Office, AutoCAD** kabi dasturlar Linux uchun mavjud emas. GIMP, Krita, Inkscape yoki LibreOffice ajoyib vositalar bo'lsa-da, ularning sanoat formatlari bilan to'liq mosligi ko'pincha professional agentliklar uchun yetarli bo'lmaydi.
+3. **Ekotizim fragmentatsiyasi:** Dasturchilar uchun Linuxga dastur tarqatish uzoq vaqt qiyin bo'lib keldi: Debian uchun `.deb`, Fedora uchun `.rpm`, Arch uchun `PKGBUILD`, turli kutubxona versiyalari. Garchi so'nggi yillarda **Flatpak, Snap va AppImage** kabi universal konteynerlashtirilgan paket formatlari bu muammoni ancha yumshatgan bo'lsa-da, fragmentatsiya hamon mavjud.
+4. **O'rganish egri chizig'i (Learning curve):** Tizim muammoga uchraganda, grafik "Sehrgar" (Wizard) yordam bermaydi. Foydalanuvchi terminalni ochishi, log fayllarni (`journalctl`) o'qishi va tushunishi talab etiladi. Bu esa kompyuterdan faqat maishiy asbob sifatida foydalanuvchi oddiy omma uchun dastlabki qo'rquvni tug'diradi.
+
+## XIII. GNU/Linux kelajagi
+
+Bugungi kunda GNU/Linux o'zining yetuklik cho'qqisiga chiqqan bo'lsa-da, u bir joyda to'xtab qolgani yo'q. Texnologiyalar olamidagi yangi chaqiriqlar yadro va uning atrofidagi ekotizimni yangi transformatsiyalar sari yetaklamoqda:
+
+### 1. Konteynerlar va Bulutli standart (eBPF davri)
+Zamonaviy bulutli dunyoni boshqarayotgan **Docker** va **Kubernetes** texnologiyalari aslida Linux yadrosining ichki mexanizmlari — **Namespaces** (jarayonlarni izolyatsiya qilish) va **cgroups** (resurslarni cheklash) ustiga qurilgan yupqa qobiqdir.
+So'nggi yillarda esa yadro ichida yana bir ulkan inqilob yuz berdi — bu **eBPF (Extended Berkeley Packet Filter)** texnologiyasidir. eBPF dasturchilarga yadro manba kodini o'zgartirmasdan va modul yuklamasdan, xavfsiz qumloq (sandbox) ichida to'g'ridan-to'g'ri yadro hodisalari bo'yicha maxsus dasturlarni ishga tushirish imkonini berdi. Bu tarmoq monitoringi, kiberxavfsizlik va kuzatuvchanlik (observability) sohalarini tubdan o'zgartirib yubordi.
+
+### 2. Xotira xavfsizligi va Rust inqilobi
+30 yildan ortiq vaqt davomida Linux yadrosi faqat bitta tilda — **C tili**da (va ozgina assemblerda) yozib kelindi. C tili chaqqon va apparatga yaqin bo'lsa-da, u xotira xavfsizligini ta'minlamaydi. Yadroda aniqlanadigan xavfsizlik zaifliklarining deyarli **70 foizi** xotira bilan noto'g'ri ishlashdan kelib chiqadi: massiv chegarasidan chiqib ketish (buffer overflow), bo'shatilgan xotiradan foydalanish (use-after-free) va poyga holatlari (race conditions).
+
+Mana shu asriy muammoni hal qilish uchun, **Linux 6.1 versiyasidan (2022-yil oxiri) boshlab**, Linus Torvalds va jamoa tarixiy qaror qabul qildilar: **Rust tili Linux yadrosiga ikkinchi rasmiy dasturlash tili sifatida kiritildi!**
+Rust o'zining qat'iy kompilyatsiya nazorati va "egalik huquqi" (ownership/borrowing) tizimi orqali xotira xatolarini hali kod kompilyatsiya bo'layotgan paytdayoq 100 foiz yo'q qiladi. Bugungi kunda yangi qurilmalar drayverlari va tarmoq modullari sekin-asta xavfsiz Rust tilida yozilmoqda.
+
+### 3. Yangi apparat arxitekturalari: RISC-V va ARM
+Kompyuter olami x86 (Intel/AMD) monopoliyasidan chiqib, energiya tejamkor **ARM64** (Apple Silicon, Ampere serverlari) va butunlay ochiq, litsenziyasiz **RISC-V** arxitekturasi tomon ildamlamoqda. Linux har doim yangi protsessor arxitekturalarini birinchi bo'lib qabul qiluvchi kashshof tizim bo'lib kelgan va kelajak apparatlari ham aynan Linux boshqaruvi ostida dunyoga kelmoqda.
+
+## XIV. Xulosa
+
+GNU/Linuxning yarim asrlik tarixi — bu shunchaki kodlar, kompilyatorlar yoki operatsion tizimlar haqidagi texnik bayon emas. Bu — insoniy tafakkur, axloqiy qat'iyat va global birodarlikning eng yorqin epopeyasidir.
+
+1983-yilda Richard Stallman bir o'zi yolg'iz holda "Men erkin tizim yozaman" deb e'lon qilganida, ko'pchilik unga xayolparast g'alati kishi sifatida qaragan edi. 1991-yilda Linus Torvalds o'zining oddiy talabalik xobbisi butun dunyoni zabt etishini tasavvur ham qilmagan edi. Ammo mana shu ikki buyuk oqim — **Stallmanning axloqiy erkinlik kompasiga to'la qarashlari** va **Torvaldsning pragmatik muhandislik dahosi** birlashganda, insoniyat o'z tarixidagi eng erkin va eng mustahkam raqamli poydevoriga ega bo'ldi.
+
+GNU/Linux bizga quyidagi buyuk saboqlarni beradi:
+1. **Hamkorlik raqobatdan ustundir:** Dunyoning eng ashaddiy korporativ raqobatchilari ham yagona ochiq poydevor atrofida birlasha olishi mumkin.
+2. **Erkinlik — bu mas'uliyatdir:** Dastur kodining ochiqligi shunchaki tekin narsadan foydalanish emas, balki o'z raqamli taqdiringizni o'z qo'lingizda ushlash, bilimlarni keyingi avlodga to'siqsiz yetkazish burchidir.
+3. **Texnologik suverenitet:** Hech bir davlat, hech bir xalq va hech bir inson bitta korporatsiyaning yoki davlatning dasturiy monopoliyasiga to'liq qaram bo'lib qolmasligi kerak. O'z mustaqilligini, xavfsizligini va milliy infratuzilmasini o'ylagan har qanday jamiyat uchun GNU/Linux yagona ishonchli najot yo'lidir.
+
+GNU/Linux bugun har birimizning cho'ntagimizdagi telefondan tortib osmondagi yulduzlarni kuzatayotgan sun'iy yo'ldoshlargacha xizmat qilmoqda. Va bu ko'rinmas poydevor mavjud ekan, insoniyatning erkin bilim va erkin ijod sari intilishi hech qachon so'nmaydi.
+
+---
+
+## Foydalanilgan manbalar va bibliografiya
+
+### Birlamchi rasmiy manbalar va hujjatlar:
+1. **Stallman, Richard.** "Initial Announcement of the GNU Project." Usenet: *net.unix-wizards*, September 27, 1983. [gnu.org/gnu/initial-announcement.html](https://www.gnu.org/gnu/initial-announcement.html)
+2. **Stallman, Richard.** "The GNU Manifesto." *Dr. Dobb's Journal of Software Tools*, Vol. 10, No. 3, March 1985. [gnu.org/gnu/manifesto.html](https://www.gnu.org/gnu/manifesto.html)
+3. **Free Software Foundation.** "What is Free Software? The Four Essential Freedoms." [gnu.org/philosophy/free-sw.html](https://www.gnu.org/philosophy/free-sw.html)
+4. **Free Software Foundation.** "Linux and the GNU System." [gnu.org/gnu/linux-and-gnu.html](https://www.gnu.org/gnu/linux-and-gnu.html)
+5. **Free Software Foundation.** "GNU/Linux FAQ." [gnu.org/gnu/gnu-linux-faq.html](https://www.gnu.org/gnu/gnu-linux-faq.html)
+6. **Torvalds, Linus.** "What would you like to see most in minix?" Usenet: *comp.os.minix*, August 25, 1991.
+7. **Torvalds, Linus.** "Release notes for Linux v0.01." September 17, 1991. [kernel.org](https://www.kernel.org)
+8. **The Linux Kernel Organization.** "Linux Kernel Documentation & Development Process." [docs.kernel.org](https://docs.kernel.org/)
+9. **Tanenbaum, Andrew S. & Torvalds, Linus.** "The Tanenbaum-Torvalds Debate." Usenet: *comp.os.minix*, January 29, 1992.
+
+### Ilmiy-tarixiy va texnik adabiyotlar:
+10. **Torvalds, Linus & Diamond, David.** *Just for Fun: The Story of an Accidental Revolutionary.* New York: HarperBusiness, 2001.
+11. **Raymond, Eric S.** *The Cathedral and the Bazaar: Musings on Linux and Open Source by an Accidental Revolutionary.* Sebastopol, CA: O'Reilly Media, 1999.
+12. **Love, Robert.** *Linux Kernel Development.* 3rd edition. Upper Saddle River, NJ: Addison-Wesley Professional, 2010. (Yadro arxitekturasi bo'yicha fundamental darslik).
+13. **Bovet, Daniel P. & Cesati, Marco.** *Understanding the Linux Kernel.* 3rd edition. Sebastopol, CA: O'Reilly Media, 2005.
+14. **Kerrisk, Michael.** *The Linux Programming Interface: A Linux and UNIX System Programming Handbook.* San Francisco: No Starch Press, 2010. (Tizimli chaqiruvlar va POSIX interfeysi bo'yicha eng to'liq qo'llanma).
+15. **Corbet, Jonathan, Rubini, Alessandro & Kroah-Hartman, Greg.** *Linux Device Drivers.* 3rd edition. Sebastopol, CA: O'Reilly Media, 2005.
+16. **Moody, Glyn.** *Rebel Code: Linux and the Open Source Revolution.* Cambridge, MA: Perseus Publishing, 2001.
+17. **Williams, Sam.** *Free as in Freedom: Richard Stallman's Crusade for Free Software.* Sebastopol, CA: O'Reilly Media, 2002.
+18. **Salus, Peter H.** *A Quarter Century of UNIX.* Reading, MA: Addison-Wesley, 1994.
+19. **Tanenbaum, Andrew S. & Bos, Herbert.** *Modern Operating Systems.* 4th edition. Boston: Pearson, 2014.
+20. **TOP500.org.** "TOP500 Supercomputer List Statistics — Operating System Family Share." [top500.org](https://www.top500.org/)
