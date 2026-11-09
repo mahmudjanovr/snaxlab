@@ -8,24 +8,26 @@ export const SITE = {
   featuredPostCount: 2,
   postsPerPage: 3,
 }
+
 export const NAV_LINKS = [
   {
     href: '/blog',
-    label: 'blog',
+    label: 'Blog',
   },
   {
     href: '/author',
-    label: 'Author',
+    label: 'Muallif',
   },
   {
     href: '/about',
-    label: 'haqida',
+    label: 'Haqida',
   },
   {
     href: '/search',
-    label: 'qidiruv',
+    label: 'Qidiruv',
   },
 ]
+
 export const SOCIAL_LINKS = [
   {
     href: 'https://github.com/snaxcyz',
@@ -40,6 +42,7 @@ export const SOCIAL_LINKS = [
     label: 'Email',
   },
 ]
+
 export const ICON_MAP = {
   Website: 'lucide:globe',
   GitHub: 'lucide:github',

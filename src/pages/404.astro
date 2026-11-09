@@ -8,22 +8,22 @@ import { cn } from '@/lib/utils'
 ---
 
 <Layout class="max-w-3xl">
-  <PageHead slot="head" title="404" />
-  <Breadcrumbs items={[{ label: '???', icon: 'lucide:circle-help' }]} />
+  <PageHead slot="head" title="404: Sahifa topilmadi" description="Siz qidirayotgan sahifa mavjud emas." noindex />
+  <Breadcrumbs items={[{ label: '404', icon: 'lucide:circle-help' }]} />
 
   <section
-    class="flex flex-col items-center justify-center gap-y-4 text-center"
+    class="flex flex-col items-center justify-center gap-y-4 text-center py-12"
   >
     <div class="max-w-md">
       <h1 class="mb-4 text-3xl font-medium">404: Sahifa topilmadi</h1>
-      <p class="prose">Kechirasiz, siz qidirayotgan sahifa mavjud emas.</p>
+      <p class="text-muted-foreground">Kechirasiz, siz qidirayotgan sahifa mavjud emas yoki o‘chirilgan.</p>
     </div>
     <Link
       href="/"
       class={cn(buttonVariants({ variant: 'outline' }), 'flex gap-x-1.5 group')}
     >
-      <span class="transition-transform group-hover:-translate-x-1">&larr;</span
-      > Bosh sahifaga qaytish
+      <span class="transition-transform group-hover:-translate-x-1">&larr;</span>
+      Bosh sahifaga qaytish
     </Link>
   </section>
 </Layout>

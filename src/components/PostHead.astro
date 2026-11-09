@@ -6,9 +6,38 @@ const { post } = Astro.props
 
 const title = post.data.title || SITE.title
 const description = post.data.description || SITE.description
-const image = new URL('/static/1200x630.png', Astro.site)
+const image = new URL('/static/1200x630.png', Astro.site || SITE.href)
 const canonical = new URL(Astro.url.pathname, Astro.site || SITE.href)
 const author = SITE.author
+
+const postImageUrl = post?.data?.image?.src
+  ? `${SITE.href}${post.data.image.src}`
+  : image.toString()
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description: description,
+  datePublished: post.data.date.toISOString(),
+  dateModified: post.data.date.toISOString(),
+  inLanguage: SITE.locale,
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': canonical.toString(),
+  },
+  author: {
+    '@type': 'Person',
+    name: author,
+    url: `${SITE.href}/author`,
+  },
+  publisher: {
+    '@type': 'Person',
+    name: author,
+  },
+  image: postImageUrl,
+  ...(post.data.tags?.length ? { keywords: post.data.tags.join(', ') } : {}),
+}
 ---
 
 <title>{`${title} | ${SITE.title}`}</title>
@@ -20,27 +49,18 @@ const author = SITE.author
 
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
-<meta
-  property="og:image"
-  content={post?.data?.image?.src
-    ? `${SITE.href}${post.data.image.src}`
-    : image}
-/>
+<meta property="og:image" content={postImageUrl} />
 <meta property="og:image:alt" content={title} />
-<meta property="og:type" content="website" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content={post.data.date.toISOString()} />
+<meta property="article:author" content={author} />
 <meta property="og:locale" content={SITE.locale} />
 <meta property="og:site_name" content={SITE.title} />
 <meta property="og:url" content={canonical} />
-<meta property="og:author" content={author} />
 
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={description} />
-<meta
-  property="twitter:image"
-  content={post?.data?.image?.src
-    ? `${SITE.href}${post.data.image.src}`
-    : image}
-/>
+<meta name="twitter:image" content={postImageUrl} />
 <meta name="twitter:image:alt" content={title} />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:creator" content={author} />
@@ -51,3 +71,5 @@ const author = SITE.author
       return <meta property="article:tag" content={tag} />
     })
 }
+
+<script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />

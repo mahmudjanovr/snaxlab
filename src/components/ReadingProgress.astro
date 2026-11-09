@@ -1,29 +1,67 @@
 ---
 ---
 
-<div id="reading-progress" class="fixed left-0 top-0 z-50 h-1 w-full bg-transparent">
-  <div id="reading-progress-bar" class="h-full w-0 bg-foreground/70 transition-[width] duration-150 ease-out"></div>
+<div
+  id="reading-progress"
+  class="fixed left-0 top-0 z-50 h-1 w-full bg-transparent pointer-events-none transition-opacity duration-200 opacity-0"
+  aria-hidden="true"
+>
+  <div
+    id="reading-progress-bar"
+    class="h-full w-0 bg-foreground/70 transition-[width] duration-150 ease-out"
+  ></div>
 </div>
 
-<script is:inline>
-  const bar = document.getElementById('reading-progress-bar');
-  const main = document.querySelector('main');
-  // Only show progress on pages that contain an <article>
-  const article = main?.querySelector('article');
-  const wrapper = document.getElementById('reading-progress');
-  if (!article || !bar || !wrapper) {
-    wrapper?.remove();
-  } else {
+<script>
+  let scrollHandler: (() => void) | null = null
+  let resizeHandler: (() => void) | null = null
+
+  function setupReadingProgress() {
+    cleanupReadingProgress()
+
+    const bar = document.getElementById('reading-progress-bar')
+    const wrapper = document.getElementById('reading-progress')
+    const article = document.querySelector('main article')
+
+    if (!article || !bar || !wrapper) {
+      if (wrapper) {
+        wrapper.classList.remove('opacity-100')
+        wrapper.classList.add('opacity-0')
+      }
+      return
+    }
+
+    wrapper.classList.remove('opacity-0')
+    wrapper.classList.add('opacity-100')
+
     const update = () => {
-      const rect = article.getBoundingClientRect();
-      const top = rect.top + window.scrollY;
-      const height = article.scrollHeight - window.innerHeight;
-      const progress = height > 0 ? (window.scrollY - top) / height : 0;
-      const clamped = Math.min(1, Math.max(0, progress));
-      bar.style.width = (clamped * 100).toFixed(2) + '%';
-    };
-    update();
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
+      const rect = article.getBoundingClientRect()
+      const top = rect.top + window.scrollY
+      const height = article.scrollHeight - window.innerHeight
+      const progress = height > 0 ? (window.scrollY - top) / height : 0
+      const clamped = Math.min(1, Math.max(0, progress))
+      bar.style.width = (clamped * 100).toFixed(2) + '%'
+    }
+
+    update()
+    scrollHandler = update
+    resizeHandler = update
+    window.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update, { passive: true })
   }
+
+  function cleanupReadingProgress() {
+    if (scrollHandler) {
+      window.removeEventListener('scroll', scrollHandler)
+      scrollHandler = null
+    }
+    if (resizeHandler) {
+      window.removeEventListener('resize', resizeHandler)
+      resizeHandler = null
+    }
+  }
+
+  setupReadingProgress()
+  document.addEventListener('astro:page-load', setupReadingProgress)
+  document.addEventListener('astro:before-swap', cleanupReadingProgress)
 </script>

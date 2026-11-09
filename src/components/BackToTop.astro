@@ -3,7 +3,7 @@
 
 <button
   id="back-to-top"
-  class="fixed bottom-6 right-6 z-40 hidden size-10 items-center justify-center rounded-full border border-border bg-background/80 text-base shadow-sm backdrop-blur transition hover:bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+  class="fixed bottom-6 right-6 z-40 hidden size-10 items-center justify-center rounded-full border border-border bg-background/80 text-base shadow-sm backdrop-blur transition hover:bg-background focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer"
   aria-label="Yuqoriga qaytish"
   title="Yuqoriga qaytish"
 >
@@ -11,25 +11,39 @@
 </button>
 
 <script>
+  let scrollHandler: (() => void) | null = null
+
   function setupBackToTop() {
-    const btn = document.getElementById('back-to-top');
-    if (!btn) return;
+    cleanupBackToTop()
+
+    const btn = document.getElementById('back-to-top')
+    if (!btn) return
+
     const toggle = () => {
-      const show = window.scrollY > 600;
+      const show = window.scrollY > 600
       if (show) {
-        btn.classList.remove('hidden');
-        btn.classList.add('flex');
+        btn.classList.remove('hidden')
+        btn.classList.add('flex')
       } else {
-        btn.classList.add('hidden');
-        btn.classList.remove('flex');
+        btn.classList.add('hidden')
+        btn.classList.remove('flex')
       }
-    };
-    toggle();
-    window.removeEventListener('scroll', toggle);
-    window.addEventListener('scroll', toggle, { passive: true });
-    btn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    toggle()
+    scrollHandler = toggle
+    window.addEventListener('scroll', toggle, { passive: true })
+    btn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  setupBackToTop();
-  document.addEventListener('astro:page-load', setupBackToTop);
+  function cleanupBackToTop() {
+    if (scrollHandler) {
+      window.removeEventListener('scroll', scrollHandler)
+      scrollHandler = null
+    }
+  }
+
+  setupBackToTop()
+  document.addEventListener('astro:page-load', setupBackToTop)
+  document.addEventListener('astro:before-swap', cleanupBackToTop)
 </script>

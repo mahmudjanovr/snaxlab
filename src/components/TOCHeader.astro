@@ -355,6 +355,7 @@ const { headings } = Astro.props
     }
 
     static init() {
+      this.cleanup()
       state.reset()
       HeadingRegions.build()
 
@@ -389,10 +390,6 @@ const { headings } = Astro.props
   }
 
   document.addEventListener('astro:page-load', () => MobileTOCController.init())
-  document.addEventListener('astro:after-swap', () => {
-    MobileTOCController.cleanup()
-    MobileTOCController.init()
-  })
   document.addEventListener('astro:before-swap', () =>
     MobileTOCController.cleanup(),
   )

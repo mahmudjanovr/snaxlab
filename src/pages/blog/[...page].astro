@@ -6,9 +6,9 @@ import PaginationComponent from '@/components/ui/pagination'
 import { SITE } from '@/consts'
 import Layout from '@/layouts/Layout.astro'
 import { getAllPosts, groupPostsByYear } from '@/lib/data-utils'
+
 export async function getStaticPaths({ paginate }) {
   const allPosts = await getAllPosts()
-
   const filteredPosts = allPosts
 
   return paginate(filteredPosts, { pageSize: SITE.postsPerPage })
@@ -18,22 +18,29 @@ const { page } = Astro.props as any
 
 const postsByYear = groupPostsByYear(page.data)
 const years = Object.keys(postsByYear).sort((a, b) => parseInt(b) - parseInt(a))
+
+const pageTitle = page.currentPage > 1 ? `Blog (${page.currentPage}-sahifa)` : 'Blog'
+const pageDescription = `SnaxLab blogi ${page.currentPage > 1 ? `- ${page.currentPage}-sahifa. ` : ''}Dasturlash, adabiyot, musiqa, san'at va falsafa haqidagi maqolalar.`
 ---
 
 <Layout class="max-w-3xl">
-  <PageHead slot="head" title="Blog" />
+  <PageHead slot="head" title={pageTitle} description={pageDescription} />
   <Breadcrumbs
-    items={[
-      { label: 'Blog', href: '/blog', icon: 'lucide:library-big' },
-      { label: `${page.currentPage}-sahifa`, icon: 'lucide:book-copy' },
-    ]}
+    items={
+      page.currentPage > 1
+        ? [
+            { label: 'Blog', href: '/blog', icon: 'lucide:library-big' },
+            { label: `${page.currentPage}-sahifa`, icon: 'lucide:book-copy' },
+          ]
+        : [{ label: 'Blog', icon: 'lucide:library-big' }]
+    }
   />
 
   <div class="flex min-h-[calc(100vh-18rem)] flex-col gap-y-8">
     {
       years.map((year) => (
         <section class="flex flex-col gap-y-4">
-          <div class="font-medium">{year}</div>
+          <div class="font-medium text-lg">{year}</div>
           <ul class="flex flex-col gap-4">
             {postsByYear[year].map((post) => (
               <li>
