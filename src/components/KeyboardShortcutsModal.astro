@@ -57,6 +57,15 @@ import { Icon } from 'astro-icon/components'
 </div>
 
 <script>
+  let shortcutsKeyHandler: ((e: KeyboardEvent) => void) | null = null
+
+  function cleanupShortcutsListeners() {
+    if (shortcutsKeyHandler) {
+      window.removeEventListener('keydown', shortcutsKeyHandler)
+      shortcutsKeyHandler = null
+    }
+  }
+
   function setupShortcuts() {
     const modal = document.getElementById('shortcuts-modal')
     const closeBtn = document.getElementById('shortcuts-close-btn')
@@ -78,16 +87,18 @@ import { Icon } from 'astro-icon/components'
       setTimeout(() => {
         modal?.classList.remove('flex')
         modal?.classList.add('hidden')
-      }, 200)
+      }, 150)
     }
 
-    closeBtn?.addEventListener('click', closeModal)
-    dismissBtn?.addEventListener('click', closeModal)
-    modal.addEventListener('click', (e) => {
+    if (closeBtn) closeBtn.onclick = closeModal
+    if (dismissBtn) dismissBtn.onclick = closeModal
+    modal.onclick = (e) => {
       if (e.target === modal) closeModal()
-    })
+    }
 
-    window.addEventListener('keydown', (e) => {
+    cleanupShortcutsListeners()
+
+    shortcutsKeyHandler = (e: KeyboardEvent) => {
       const activeEl = document.activeElement
       const isInput =
         activeEl instanceof HTMLInputElement ||
@@ -115,9 +126,12 @@ import { Icon } from 'astro-icon/components'
         e.preventDefault()
         window.location.href = '/search'
       }
-    })
+    }
+
+    window.addEventListener('keydown', shortcutsKeyHandler)
   }
 
   setupShortcuts()
   document.addEventListener('astro:page-load', setupShortcuts)
+  document.addEventListener('astro:before-swap', cleanupShortcutsListeners)
 </script>

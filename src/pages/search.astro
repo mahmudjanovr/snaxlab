@@ -183,10 +183,10 @@ const initialData = posts.map((post) => {
       }
 
       let timeout = null;
-      input.addEventListener('input', () => {
+      input.oninput = () => {
         clearTimeout(timeout);
-        timeout = setTimeout(filter, 80);
-      });
+        timeout = setTimeout(filter, 60);
+      };
 
       renderList(items, '');
 
@@ -201,6 +201,10 @@ const initialData = posts.map((post) => {
         }
       };
 
+      if (window['__searchKeyHandler']) {
+        window.removeEventListener('keydown', window['__searchKeyHandler']);
+      }
+      window['__searchKeyHandler'] = handleKeyDown;
       window.addEventListener('keydown', handleKeyDown);
       document.addEventListener('astro:before-swap', () => {
         window.removeEventListener('keydown', handleKeyDown);

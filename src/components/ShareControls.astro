@@ -62,7 +62,7 @@ const { title, url } = Astro.props
   function setupShareControls() {
     const containers = document.querySelectorAll('.share-controls')
     containers.forEach((container) => {
-      const copyBtn = container.querySelector('.copy-link-btn')
+      const copyBtn = container.querySelector('.copy-link-btn') as HTMLButtonElement | null
       const nativeBtn = container.querySelector('.native-share-btn') as HTMLButtonElement | null
       const tgLink = container.querySelector('.telegram-share-btn') as HTMLAnchorElement | null
       const xLink = container.querySelector('.x-share-btn') as HTMLAnchorElement | null
@@ -81,7 +81,8 @@ const { title, url } = Astro.props
       if (navigator.share && nativeBtn) {
         nativeBtn.classList.remove('hidden')
         nativeBtn.classList.add('inline-flex')
-        nativeBtn.onclick = async () => {
+        nativeBtn.onclick = async (e) => {
+          e.preventDefault()
           try {
             await navigator.share({ title, url: shareUrl })
           } catch {}
@@ -92,8 +93,13 @@ const { title, url } = Astro.props
         const copyIcon = copyBtn.querySelector('.copy-icon')
         const checkIcon = copyBtn.querySelector('.check-icon')
         const label = copyBtn.querySelector('.btn-label')
+        let isCopying = false
 
-        copyBtn.addEventListener('click', async () => {
+        copyBtn.onclick = async (e) => {
+          e.preventDefault()
+          if (isCopying) return
+          isCopying = true
+
           try {
             await navigator.clipboard.writeText(shareUrl)
             if (copyIcon && checkIcon && label) {
@@ -104,7 +110,10 @@ const { title, url } = Astro.props
                 copyIcon.classList.remove('hidden')
                 checkIcon.classList.add('hidden')
                 label.textContent = 'Havola'
+                isCopying = false
               }, 2000)
+            } else {
+              isCopying = false
             }
           } catch {
             const tempInput = document.createElement('input')
@@ -113,8 +122,9 @@ const { title, url } = Astro.props
             tempInput.select()
             document.execCommand('copy')
             document.body.removeChild(tempInput)
+            isCopying = false
           }
-        })
+        }
       }
     })
   }

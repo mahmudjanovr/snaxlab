@@ -57,7 +57,7 @@ import { Icon } from 'astro-icon/components'
     function renderBookmarks() {
       const container = document.getElementById('saved-articles-container')
       const emptyState = document.getElementById('saved-empty-state')
-      const clearBtn = document.getElementById('clear-all-bookmarks')
+      const clearBtn = document.getElementById('clear-all-bookmarks') as HTMLButtonElement | null
       if (!container || !emptyState) return
 
       let items = []
@@ -103,19 +103,24 @@ import { Icon } from 'astro-icon/components'
       `).join('')
 
       container.querySelectorAll('.remove-bookmark-btn').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
+        (btn as HTMLButtonElement).onclick = (e) => {
+          e.preventDefault()
           e.stopPropagation()
-          const id = (btn as HTMLElement).getAttribute('data-id')
-          const updated = items.filter((i: any) => i.id !== id)
+          const id = btn.getAttribute('data-id')
+          const current = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+          const updated = current.filter((i: any) => i.id !== id)
           localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+          window.dispatchEvent(new CustomEvent('snaxlab:bookmarks-changed', { detail: updated }))
           renderBookmarks()
-        })
+        }
       })
 
       if (clearBtn) {
-        clearBtn.onclick = () => {
+        clearBtn.onclick = (e) => {
+          e.preventDefault()
           if (confirm('Barcha saqlangan maqolalarni ro\'yxatdan o\'chirmoqchimisiz?')) {
             localStorage.removeItem(STORAGE_KEY)
+            window.dispatchEvent(new CustomEvent('snaxlab:bookmarks-changed', { detail: [] }))
             renderBookmarks()
           }
         }
@@ -124,6 +129,10 @@ import { Icon } from 'astro-icon/components'
 
     renderBookmarks()
     document.addEventListener('astro:page-load', renderBookmarks)
-    window.addEventListener('snaxlab:bookmarks-changed', renderBookmarks)
+
+    if (!window['__snaxlabSavedPageBound']) {
+      window['__snaxlabSavedPageBound'] = true
+      window.addEventListener('snaxlab:bookmarks-changed', renderBookmarks)
+    }
   </script>
 </Layout>

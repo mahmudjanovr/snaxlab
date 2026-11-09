@@ -48,6 +48,36 @@ const { id, title, href, date = '', description = '' } = Astro.props
     } catch {}
   }
 
+  function updateButtonUI(btn: Element, isSaved: boolean) {
+    const outline = btn.querySelector('.bookmark-outline')
+    const filled = btn.querySelector('.bookmark-filled')
+    const label = btn.querySelector('.bookmark-label')
+
+    btn.setAttribute('aria-pressed', isSaved ? 'true' : 'false')
+    if (isSaved) {
+      outline?.classList.add('hidden')
+      filled?.classList.remove('hidden')
+      if (label) label.textContent = 'Saqlangan'
+      btn.setAttribute('title', "Saqlanganlardan o'chirish")
+    } else {
+      outline?.classList.remove('hidden')
+      filled?.classList.add('hidden')
+      if (label) label.textContent = 'Saqlash'
+      btn.setAttribute('title', "Keyinroq o'qish uchun saqlash")
+    }
+  }
+
+  function syncAllBookmarkButtons() {
+    const buttons = document.querySelectorAll('.bookmark-toggle-btn')
+    const saved = getSavedArticles()
+    buttons.forEach((btn) => {
+      const id = btn.getAttribute('data-id')
+      if (!id) return
+      const isSaved = saved.some((item: any) => item.id === id)
+      updateButtonUI(btn, isSaved)
+    })
+  }
+
   function setupBookmarkButtons() {
     const buttons = document.querySelectorAll('.bookmark-toggle-btn')
     const saved = getSavedArticles()
@@ -56,51 +86,56 @@ const { id, title, href, date = '', description = '' } = Astro.props
       const id = btn.getAttribute('data-id')
       if (!id) return
 
-      const outline = btn.querySelector('.bookmark-outline')
-      const filled = btn.querySelector('.bookmark-filled')
-      const label = btn.querySelector('.bookmark-label')
-
       const isSaved = saved.some((item: any) => item.id === id)
-      updateUI(isSaved)
+      updateButtonUI(btn, isSaved)
 
-      function updateUI(savedState: boolean) {
-        btn.setAttribute('aria-pressed', savedState ? 'true' : 'false')
-        if (savedState) {
-          outline?.classList.add('hidden')
-          filled?.classList.remove('hidden')
-          if (label) label.textContent = 'Saqlangan'
-          btn.setAttribute('title', "Saqlanganlardan o'chirish")
-        } else {
-          outline?.classList.remove('hidden')
-          filled?.classList.add('hidden')
-          if (label) label.textContent = 'Saqlash'
-          btn.setAttribute('title', "Keyinroq o'qish uchun saqlash")
-        }
-      }
+      // Guard: never attach multiple click listeners to the same button
+      const htmlBtn = btn as HTMLElement
+      if (htmlBtn.dataset.bookmarkBound === 'true') return
+      htmlBtn.dataset.bookmarkBound = 'true'
 
-      btn.addEventListener('click', () => {
-        const currentSaved = getSavedArticles()
-        const index = currentSaved.findIndex((item: any) => item.id === id)
-        if (index > -1) {
-          currentSaved.splice(index, 1)
-          setSavedArticles(currentSaved)
-          updateUI(false)
-        } else {
-          currentSaved.unshift({
-            id,
-            title: btn.getAttribute('data-title') || '',
-            href: btn.getAttribute('data-href') || '',
-            date: btn.getAttribute('data-date') || '',
-            description: btn.getAttribute('data-description') || '',
-            savedAt: new Date().toISOString(),
-          })
-          setSavedArticles(currentSaved)
-          updateUI(true)
+      let isProcessing = false
+
+      htmlBtn.addEventListener('click', (e) => {
+        e.preventDefault()
+        if (isProcessing) return
+        isProcessing = true
+
+        try {
+          const currentSaved = getSavedArticles()
+          const index = currentSaved.findIndex((item: any) => item.id === id)
+          if (index > -1) {
+            currentSaved.splice(index, 1)
+            setSavedArticles(currentSaved)
+            updateButtonUI(btn, false)
+          } else {
+            currentSaved.unshift({
+              id,
+              title: btn.getAttribute('data-title') || '',
+              href: btn.getAttribute('data-href') || '',
+              date: btn.getAttribute('data-date') || '',
+              description: btn.getAttribute('data-description') || '',
+              savedAt: new Date().toISOString(),
+            })
+            setSavedArticles(currentSaved)
+            updateButtonUI(btn, true)
+          }
+        } finally {
+          setTimeout(() => {
+            isProcessing = false
+          }, 150)
         }
       })
     })
   }
 
+  // Setup once on page load and on Astro transitions
   setupBookmarkButtons()
   document.addEventListener('astro:page-load', setupBookmarkButtons)
+
+  // Listen to bookmarks change event to sync all buttons on page
+  if (!window['__snaxlabBookmarkSyncBound']) {
+    window['__snaxlabBookmarkSyncBound'] = true
+    window.addEventListener('snaxlab:bookmarks-changed', syncAllBookmarkButtons)
+  }
 </script>

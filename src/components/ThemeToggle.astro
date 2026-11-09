@@ -39,27 +39,30 @@ import { Icon } from 'astro-icon/components'
     localStorage.setItem('theme', theme)
   }
 
-  function handleToggleClick() {
-    const element = document.documentElement
-    const currentTheme =
-      element.getAttribute('data-theme') || getPreferredTheme()
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark'
+  let isToggling = false
+  function handleToggleClick(e?: Event) {
+    if (e) e.preventDefault()
+    if (isToggling) return
+    isToggling = true
 
-    element.classList.add('[&_*]:transition-none')
-    applyTheme(newTheme)
+    try {
+      const element = document.documentElement
+      const currentTheme =
+        element.getAttribute('data-theme') || getPreferredTheme()
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark'
 
-    window.getComputedStyle(element).getPropertyValue('opacity')
-
-    requestAnimationFrame(() => {
-      element.classList.remove('[&_*]:transition-none')
-    })
+      applyTheme(newTheme)
+    } finally {
+      setTimeout(() => {
+        isToggling = false
+      }, 150)
+    }
   }
 
   function initThemeToggle() {
     const themeToggle = document.getElementById('theme-toggle')
     if (themeToggle) {
-      themeToggle.removeEventListener('click', handleToggleClick)
-      themeToggle.addEventListener('click', handleToggleClick)
+      themeToggle.onclick = handleToggleClick
     }
   }
 
@@ -67,16 +70,7 @@ import { Icon } from 'astro-icon/components'
 
   document.addEventListener('astro:page-load', initThemeToggle)
   document.addEventListener('astro:after-swap', () => {
-    const element = document.documentElement
-
-    element.classList.add('[&_*]:transition-none')
     applyTheme(getPreferredTheme())
-    window.getComputedStyle(element).getPropertyValue('opacity')
-
-    requestAnimationFrame(() => {
-      element.classList.remove('[&_*]:transition-none')
-    })
-
     initThemeToggle()
   })
 </script>

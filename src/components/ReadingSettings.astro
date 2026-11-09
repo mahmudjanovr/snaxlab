@@ -48,27 +48,24 @@ import { Icon } from 'astro-icon/components'
   }
 
   function setupReadingSettings() {
-    const fontBtn = document.getElementById('font-size-toggle')
-    const focusBtn = document.getElementById('focus-mode-toggle')
+    const fontBtn = document.getElementById('font-size-toggle') as HTMLButtonElement | null
+    const focusBtn = document.getElementById('focus-mode-toggle') as HTMLButtonElement | null
     const fontLabel = document.getElementById('font-size-label')
     const article = document.querySelector('main article')
-    if (!article) return
+    if (!article || !fontBtn || !focusBtn) return
 
     const settings = getSettings()
-    let fontLevel = settings.fontLevel || 0 // 0: normal, 1: large, 2: extra
-    let isFocus = settings.focus || false
+    let fontLevel = typeof settings.fontLevel === 'number' ? settings.fontLevel : 0
+    let isFocus = !!settings.focus
 
-    const fontClasses = ['prose-base', 'text-lg', 'text-xl']
     const fontLabels = ['A', 'A+', 'A++']
 
     function apply() {
-      // Font size
       article?.classList.remove('text-lg', 'text-xl')
       if (fontLevel === 1) article?.classList.add('text-lg')
       if (fontLevel === 2) article?.classList.add('text-xl')
       if (fontLabel) fontLabel.textContent = fontLabels[fontLevel]
 
-      // Focus mode
       const shrinkIcon = focusBtn?.querySelector('.focus-icon-shrink')
       const expandIcon = focusBtn?.querySelector('.focus-icon-expand')
       const sidebar = document.getElementById('toc-sidebar-container')
@@ -90,18 +87,16 @@ import { Icon } from 'astro-icon/components'
 
     apply()
 
-    if (fontBtn) {
-      fontBtn.onclick = () => {
-        fontLevel = (fontLevel + 1) % 3
-        apply()
-      }
+    fontBtn.onclick = (e) => {
+      e.preventDefault()
+      fontLevel = (fontLevel + 1) % 3
+      apply()
     }
 
-    if (focusBtn) {
-      focusBtn.onclick = () => {
-        isFocus = !isFocus
-        apply()
-      }
+    focusBtn.onclick = (e) => {
+      e.preventDefault()
+      isFocus = !isFocus
+      apply()
     }
   }
 

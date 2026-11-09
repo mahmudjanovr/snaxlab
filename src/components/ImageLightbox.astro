@@ -30,6 +30,15 @@ import { Icon } from 'astro-icon/components'
 </div>
 
 <script>
+  let lightboxKeyHandler: ((e: KeyboardEvent) => void) | null = null
+
+  function cleanupLightboxListeners() {
+    if (lightboxKeyHandler) {
+      window.removeEventListener('keydown', lightboxKeyHandler)
+      lightboxKeyHandler = null
+    }
+  }
+
   function setupLightbox() {
     const lightbox = document.getElementById('image-lightbox')
     const imgEl = document.getElementById('lightbox-image') as HTMLImageElement | null
@@ -60,14 +69,15 @@ import { Icon } from 'astro-icon/components'
         lightbox.classList.add('hidden')
         imgEl.src = ''
         document.body.style.overflow = ''
-      }, 200)
+      }, 150)
     }
 
-    // Attach to images in article
+    // Attach to images in article with bound guard
     const articleImages = document.querySelectorAll('main article img')
     articleImages.forEach((img) => {
-      // Don't apply to links or tiny icons
       if (img.closest('a') || img.classList.contains('size-5') || img.classList.contains('size-4')) return
+      if ((img as HTMLElement).dataset.lightboxBound === 'true') return
+      ;(img as HTMLElement).dataset.lightboxBound = 'true'
       img.classList.add('cursor-zoom-in')
       img.addEventListener('click', () => {
         const imageElement = img as HTMLImageElement
@@ -75,20 +85,24 @@ import { Icon } from 'astro-icon/components'
       })
     })
 
-    closeBtn?.addEventListener('click', closeLightbox)
-    lightbox.addEventListener('click', (e) => {
+    if (closeBtn) closeBtn.onclick = closeLightbox
+    lightbox.onclick = (e) => {
       if (e.target === lightbox || e.target === imgEl.parentElement) {
         closeLightbox()
       }
-    })
+    }
 
-    window.addEventListener('keydown', (e) => {
+    cleanupLightboxListeners()
+
+    lightboxKeyHandler = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !lightbox.classList.contains('hidden')) {
         closeLightbox()
       }
-    })
+    }
+    window.addEventListener('keydown', lightboxKeyHandler)
   }
 
   setupLightbox()
   document.addEventListener('astro:page-load', setupLightbox)
+  document.addEventListener('astro:before-swap', cleanupLightboxListeners)
 </script>
