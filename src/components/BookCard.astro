@@ -1,0 +1,65 @@
+---
+import { Badge } from '@/components/ui/badge'
+import { Icon } from 'astro-icon/components'
+import Link from './Link.astro'
+
+interface Props {
+  book: any
+}
+
+const { book } = Astro.props
+const { title, author, status, rating, genre, description, featured } = book.data
+
+const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
+  read: { label: "O'qilgan", variant: 'default' },
+  reading: { label: "O'qilmoqda", variant: 'secondary' },
+  'want-to-read': { label: 'Rejada', variant: 'outline' },
+}
+
+const currentStatus = statusMap[status] || { label: status, variant: 'outline' }
+---
+
+<article
+  class={`group relative flex flex-col justify-between rounded-xl border border-border p-5 transition-all duration-200 hover:bg-secondary/40 ${featured ? 'border-primary/40 bg-secondary/15' : ''}`}
+>
+  <div class="flex flex-col gap-y-3">
+    <div class="flex items-start justify-between gap-2">
+      <Badge variant={currentStatus.variant} className="text-[10px] uppercase tracking-wider">
+        {currentStatus.label}
+      </Badge>
+      {rating && (
+        <div class="flex items-center text-amber-500 text-xs" title={`Baho: ${rating}/5`}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Icon
+              name="lucide:star"
+              class={`size-3 ${i < rating ? 'fill-current' : 'opacity-20'}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+
+    <div>
+      <h3 class="text-base font-semibold leading-snug group-hover:text-primary transition-colors">
+        <Link href={`/bookshelf/${book.id}/`} class="outline-none">
+          <span class="absolute inset-0" aria-hidden="true" />
+          {title}
+        </Link>
+      </h3>
+      <p class="text-xs font-medium text-muted-foreground mt-0.5">
+        {author}
+      </p>
+    </div>
+
+    <p class="text-muted-foreground text-xs line-clamp-3 leading-relaxed">
+      {description}
+    </p>
+  </div>
+
+  <div class="mt-4 flex items-center justify-between border-t border-border/60 pt-3 text-[11px] text-muted-foreground">
+    <span class="truncate">{genre}</span>
+    <span class="group-hover:translate-x-0.5 transition-transform font-medium text-foreground">
+      Tahlil &rarr;
+    </span>
+  </div>
+</article>

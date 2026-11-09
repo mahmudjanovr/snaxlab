@@ -1,41 +1,125 @@
 ---
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import PageHead from '@/components/PageHead.astro'
+import Link from '@/components/Link.astro'
 import Layout from '@/layouts/Layout.astro'
+import { getSiteStatistics, getRecentPosts } from '@/lib/data-utils'
+import { Icon } from 'astro-icon/components'
+
+const stats = await getSiteStatistics()
+const recentPosts = await getRecentPosts(3)
 ---
 
 <Layout class="max-w-3xl">
-  <PageHead slot="head" title="About" />
-  <Breadcrumbs items={[{ label: 'About', icon: 'lucide:info' }]} />
+  <PageHead
+    slot="head"
+    title="Rahmatillo Mahmudjanov haqida"
+    description="SnaxLab muallifi Rahmatillo Mahmudjanov (snaxcyz) haqida biografiya, qarashlar, aloqa va nashr falsafasi."
+  />
 
-  <section class="animate">
-    <div class="prose prose-neutral dark:prose-invert">
-      <h2 class="mb-4 text-3xl font-bold">Rahmatillo Mahmudjanov</h2>
+  <Breadcrumbs items={[{ label: 'Haqida', icon: 'lucide:user' }]} />
 
-      <p class="text-muted-foreground text-lg">"I use arch btw"</p>
+  <!-- Author Hero -->
+  <section class="flex flex-col sm:flex-row items-start sm:items-center gap-6 py-4 border-b border-border">
+    <img
+      src="/static/logo.svg"
+      alt="Rahmatillo Mahmudjanov"
+      class="size-20 sm:size-24 rounded-2xl border border-border bg-secondary/30 p-2 shadow-sm shrink-0"
+    />
+    <div class="flex flex-col gap-y-1">
+      <div class="flex items-center gap-2">
+        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Rahmatillo Mahmudjanov</h1>
+        <span class="rounded bg-secondary px-2 py-0.5 text-xs text-muted-foreground font-mono">snaxcyz</span>
+      </div>
+      <p class="text-sm font-medium text-primary">Dasturiy injiniring, adabiyot va raqamli hunarmandchilik</p>
+      <p class="text-xs text-muted-foreground italic mt-0.5">"I use Arch btw."</p>
+    </div>
+  </section>
 
-      <h3 class="mt-6 text-xl font-semibold">Contact / Aloqa</h3>
-      <ul>
-        <li>
-          Email: <a href="mailto:snaxcyz@gmail.com">snaxcyz@gmail.com</a>
+  <!-- Editorial Biography -->
+  <section class="mt-8 flex flex-col gap-y-6 text-sm leading-relaxed text-foreground/90">
+    <div class="flex flex-col gap-y-3">
+      <h2 class="text-lg font-semibold text-foreground">SnaxLab nima?</h2>
+      <p>
+        <strong>SnaxLab</strong> — bu mening shaxsiy raqamli nashrim va intellektual tajriba maydonim. Bu yerda men o'zim mutolaa qilgan mumtoz adabiyotlar (Dostoyevskiy, Kamyu, Kafka, Oruell, Gyote), falsafiy oqimlar (ekzistensializm, absurdizm, stoitsizm), konseptual musiqa durdonalari va dasturlash arxitekturasi to'g'risida chuqur, shoshilmasdan tahliliy fikrlar yuritaman.
+      </p>
+      <p>
+        Mening maqsadim — shoshqaloq ijtimoiy tarmoqlar shovqinidan xoli, sof matn va teran fikrga qaratilgan erkin maydon yaratishdir.
+      </p>
+    </div>
+
+    <!-- Editorial Stats -->
+    <div class="my-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div class="rounded-xl border border-border bg-secondary/20 p-4 text-center">
+        <span class="text-2xl font-bold font-mono text-primary">{stats.totalPosts}</span>
+        <p class="text-[11px] text-muted-foreground uppercase tracking-wider mt-1">Maqolalar</p>
+      </div>
+      <div class="rounded-xl border border-border bg-secondary/20 p-4 text-center">
+        <span class="text-2xl font-bold font-mono text-primary">{stats.totalBooks}</span>
+        <p class="text-[11px] text-muted-foreground uppercase tracking-wider mt-1">Kitob javoni</p>
+      </div>
+      <div class="rounded-xl border border-border bg-secondary/20 p-4 text-center">
+        <span class="text-2xl font-bold font-mono text-primary">{stats.totalQuotes}</span>
+        <p class="text-[11px] text-muted-foreground uppercase tracking-wider mt-1">Iqtiboslar</p>
+      </div>
+      <div class="rounded-xl border border-border bg-secondary/20 p-4 text-center">
+        <span class="text-2xl font-bold font-mono text-primary">{stats.totalTags}</span>
+        <p class="text-[11px] text-muted-foreground uppercase tracking-wider mt-1">Mavzular</p>
+      </div>
+    </div>
+
+    <!-- Contact & Links -->
+    <div class="flex flex-col gap-y-3 pt-4 border-t border-border">
+      <h2 class="text-lg font-semibold text-foreground">Aloqa va Tarmoqlar</h2>
+      <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+        <li class="flex items-center gap-2 p-2.5 rounded-lg border border-border bg-secondary/15">
+          <Icon name="lucide:send" class="size-4 text-sky-500 shrink-0" />
+          <span>Telegram:</span>
+          <Link href="https://t.me/mahmudjanovr" target="_blank" class="font-medium underline">
+            @mahmudjanovr
+          </Link>
         </li>
-        <li>
-          Telegram: <a href="https://t.me/mahmudjanovr" target="_blank"
-            >@mahmudjanovr</a
-          >
+        <li class="flex items-center gap-2 p-2.5 rounded-lg border border-border bg-secondary/15">
+          <Icon name="lucide:mail" class="size-4 text-emerald-500 shrink-0" />
+          <span>Elektron pochta:</span>
+          <Link href="mailto:snaxcyz@gmail.com" class="font-medium underline truncate">
+            snaxcyz@gmail.com
+          </Link>
         </li>
-        <li>
-          Twitter(X): <a href="https://x.com/mahmudjanovr" target="_blank"
-            >@mahmudjanovr</a
-          >
+        <li class="flex items-center gap-2 p-2.5 rounded-lg border border-border bg-secondary/15">
+          <Icon name="lucide:github" class="size-4 text-foreground shrink-0" />
+          <span>GitHub:</span>
+          <Link href="https://github.com/mahmudjanovr" target="_blank" class="font-medium underline">
+            @mahmudjanovr
+          </Link>
         </li>
-        <li>
-          Linkedin: <a
-            href="https://www.linkedin.com/in/mahmudjanovr"
-            target="_blank">@mahmudjanovr</a
-          >
+        <li class="flex items-center gap-2 p-2.5 rounded-lg border border-border bg-secondary/15">
+          <Icon name="lucide:twitter" class="size-4 text-blue-400 shrink-0" />
+          <span>Twitter (X):</span>
+          <Link href="https://x.com/mahmudjanovr" target="_blank" class="font-medium underline">
+            @mahmudjanovr
+          </Link>
         </li>
       </ul>
     </div>
+
+    <!-- Recent Writings -->
+    {recentPosts.length > 0 && (
+      <div class="mt-8 pt-8 border-t border-border">
+        <h3 class="font-serif text-xl font-bold tracking-tight mb-4">So'nggi yozishmalar</h3>
+        <ul class="space-y-3">
+          {recentPosts.map((post) => (
+            <li class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 text-sm">
+              <Link href={`/blog/${post.id}/`} class="text-foreground hover:underline font-medium">
+                {post.data.title}
+              </Link>
+              <span class="text-xs text-muted-foreground font-mono shrink-0">
+                {post.data.date.toLocaleDateString('uz-UZ', { year: 'numeric', month: 'short', day: 'numeric' })}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
   </section>
 </Layout>

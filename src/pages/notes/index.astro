@@ -1,0 +1,83 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import PageHead from '@/components/PageHead.astro'
+import Link from '@/components/Link.astro'
+import { Badge } from '@/components/ui/badge'
+import Layout from '@/layouts/Layout.astro'
+import { getAllNotes, getPostById, getBookBySlug } from '@/lib/data-utils'
+import { formatDate } from '@/lib/utils'
+import { Icon } from 'astro-icon/components'
+import { render } from 'astro:content'
+
+const notes = await getAllNotes()
+---
+
+<Layout class="max-w-3xl">
+  <PageHead
+    slot="head"
+    title="Qaydlar va fikrlar"
+    description="Falsafa, adabiyot, musiqa va dasturlash bo'yicha qisqa shaxsiy qaydlar va intellektual mushohadalar."
+  />
+
+  <Breadcrumbs items={[{ label: 'Qaydlar', icon: 'lucide:notebook-pen' }]} />
+
+  <section class="flex flex-col gap-y-3">
+    <h1 class="text-3xl font-bold tracking-tight">Qaydlar & Mushohadalar</h1>
+    <p class="text-muted-foreground text-sm leading-relaxed">
+      Katta maqolaga aylanmagan, biroq e'tiborga loyiq qisqa kuzatuvlar, adabiy qaydlar va dasturiy tahlillar.
+    </p>
+  </section>
+
+  <div class="mt-8 flex flex-col gap-y-6">
+    {
+      notes.map(async (note) => {
+        const { Content } = await render(note)
+        const relatedPost = note.data.relatedPost ? await getPostById(note.data.relatedPost) : null
+        const relatedBook = note.data.relatedBook ? await getBookBySlug(note.data.relatedBook) : null
+
+        return (
+          <article class="rounded-xl border border-border bg-secondary/15 p-6 transition-colors hover:bg-secondary/30">
+            <header class="flex flex-col gap-y-1.5 border-b border-border/60 pb-3">
+              <div class="flex items-center justify-between text-xs text-muted-foreground">
+                <time datetime={note.data.date.toISOString()}>{formatDate(note.data.date)}</time>
+                {note.data.subject && (
+                  <span class="font-medium text-foreground">{note.data.subject}</span>
+                )}
+              </div>
+              <h2 class="text-lg font-semibold tracking-tight">{note.data.title}</h2>
+            </header>
+
+            <div class="prose prose-invert max-w-none text-sm leading-relaxed py-4">
+              <Content />
+            </div>
+
+            <footer class="flex flex-wrap items-center justify-between gap-3 border-t border-border/40 pt-3 text-xs text-muted-foreground">
+              <div class="flex flex-wrap gap-1.5">
+                {note.data.tags?.map((t: string) => (
+                  <Badge variant="secondary" className="text-[10px] py-0 px-2">
+                    #{t}
+                  </Badge>
+                ))}
+              </div>
+
+              <div class="flex items-center gap-3">
+                {relatedPost && (
+                  <Link href={`/blog/${relatedPost.id}`} class="hover:underline flex items-center gap-1 text-primary">
+                    <Icon name="lucide:file-text" class="size-3" />
+                    <span>Maqola: {relatedPost.data.title}</span>
+                  </Link>
+                )}
+                {relatedBook && (
+                  <Link href={`/bookshelf/${relatedBook.id}`} class="hover:underline flex items-center gap-1 text-primary">
+                    <Icon name="lucide:book-open" class="size-3" />
+                    <span>Kitob: {relatedBook.data.title}</span>
+                  </Link>
+                )}
+              </div>
+            </footer>
+          </article>
+        )
+      })
+    }
+  </div>
+</Layout>

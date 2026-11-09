@@ -1,0 +1,85 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import PageHead from '@/components/PageHead.astro'
+import Layout from '@/layouts/Layout.astro'
+import { Icon } from 'astro-icon/components'
+---
+
+<Layout class="max-w-3xl">
+  <PageHead
+    slot="head"
+    title="Uses — Ish qurollari va dasturlar"
+    description="Rahmatillo Mahmudjanov (snaxcyz) kundalik foydalanadigan apparat, dasturlar, muhit va vositalar ro'yxati."
+  />
+
+  <Breadcrumbs items={[{ label: 'Uses', icon: 'lucide:wrench' }]} />
+
+  <section class="flex flex-col gap-y-3">
+    <h1 class="text-3xl font-bold tracking-tight">Uses / Ish qurollarim</h1>
+    <p class="text-muted-foreground text-sm leading-relaxed">
+      Dasturlash, yozish va kundalik faoliyatimda doimiy foydalanadigan dasturiy ta'minot, operatsion tizim va ish qurollari to'plami.
+    </p>
+  </section>
+
+  <div class="mt-8 flex flex-col gap-y-8 divide-y divide-border">
+    <!-- Operating System & Environment -->
+    <div class="pt-6 first:pt-0 flex flex-col gap-y-4">
+      <h2 class="text-lg font-semibold flex items-center gap-2">
+        <Icon name="lucide:terminal" class="size-4 text-primary" />
+        Operatsion tizim & Ishchi muhit
+      </h2>
+      <ul class="flex flex-col gap-y-2.5 text-sm text-foreground/90">
+        <li>
+          <strong>Arch Linux:</strong> Asosiy operatsion tizim. Minimalizm, rolling-release yangilanishlar va to'liq nazorat sababli tanlangan.
+        </li>
+        <li>
+          <strong>Hyprland / Wayland:</strong> Dinamik tiling oyna boshqaruvchisi. Klaviatura orqali tezkor boshqaruv va silliq animatsiyalar.
+        </li>
+        <li>
+          <strong>Alacritty / Foot:</strong> GPU-tezlatgichli, o'ta yengil terminal emulyatorlari.
+        </li>
+        <li>
+          <strong>Zsh + Starship:</strong> Moslashuvchan va tezkor buyruqlar satri (shell).
+        </li>
+      </ul>
+    </div>
+
+    <!-- Development Tools -->
+    <div class="pt-6 flex flex-col gap-y-4">
+      <h2 class="text-lg font-semibold flex items-center gap-2">
+        <Icon name="lucide:code-2" class="size-4 text-primary" />
+        Dasturlash & Muharrirlar
+      </h2>
+      <ul class="flex flex-col gap-y-2.5 text-sm text-foreground/90">
+        <li>
+          <strong>Neovim:</strong> Asosiy matn va kod muharriri. Lua konfiguratsiyalari, LSP va Treesitter bilan boyitilgan.
+        </li>
+        <li>
+          <strong>VS Code:</strong> Katta frontend loyihalar va tezkor taqdimotlar uchun ikkilamchi muharrir.
+        </li>
+        <li>
+          <strong>Git & GitHub:</strong> Versiyalar nazorati va ochiq kodli loyihalar hamkorligi.
+        </li>
+        <li>
+          <strong>Astro 5 & Tailwind CSS v4:</strong> Zamonaviy veb-nashrlar va yuqori unumli statik saytlar yaratish uchun asosiy stek.
+        </li>
+      </ul>
+    </div>
+
+    <!-- Hosting & Infrastructure -->
+    <div class="pt-6 flex flex-col gap-y-4">
+      <h2 class="text-lg font-semibold flex items-center gap-2">
+        <Icon name="lucide:cloud" class="size-4 text-primary" />
+        Hosting & Infratuzilma
+      </h2>
+      <ul class="flex flex-col gap-y-2.5 text-sm text-foreground/90">
+        <li>
+          <strong>Cloudflare Pages & Pages Functions:</strong> Global CDN orqali chaqmoqdek tez statik yetkazib berish va serverless API.
+        </li>
+        <li>
+          <strong>GitHub API:</strong> Statik blog uchun xavfsiz git-based CMS boshqaruvi.
+        </li>
+      </ul>
+    </div>
+  </div>
+</Layout>

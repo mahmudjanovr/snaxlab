@@ -1,0 +1,80 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import PageHead from '@/components/PageHead.astro'
+import Link from '@/components/Link.astro'
+import Layout from '@/layouts/Layout.astro'
+import { getAllSeries, getPostById } from '@/lib/data-utils'
+
+const allSeries = await getAllSeries()
+---
+
+<Layout class="max-w-3xl">
+  <PageHead
+    slot="head"
+    title="Maqolalar seriyalari va turkumlari"
+    description="SnaxLab maqolalarining mavzuviy seriyalari: adabiyot, falsafa va musiqa turkumlari."
+  />
+
+  <Breadcrumbs items={[{ label: 'Seriyalar', icon: 'lucide:layers' }]} />
+
+  <section class="flex flex-col gap-y-3">
+    <h1 class="text-3xl font-bold tracking-tight">Maqolalar seriyalari</h1>
+    <p class="text-muted-foreground text-sm leading-relaxed">
+      Bir-birini to'ldiruvchi va umumiy g'oya atrofida birlashgan ko'p qismli adabiy va falsafiy maqolalar sikli.
+    </p>
+  </section>
+
+  <div class="mt-8 flex flex-col gap-y-8">
+    {
+      allSeries.map(async (s) => {
+        const postPromises = s.data.posts.map((id: string) => getPostById(id))
+        const posts = (await Promise.all(postPromises)).filter(Boolean)
+
+        return (
+          <article class="rounded-xl border border-border bg-secondary/15 p-6 transition-all hover:bg-secondary/25">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <span class="text-xs uppercase tracking-wider font-semibold text-primary">
+                  {posts.length} ta maqola
+                </span>
+                <h2 class="text-xl font-bold tracking-tight mt-1">
+                  <Link href={`/series/${s.id}/`} class="hover:underline">
+                    {s.data.title}
+                  </Link>
+                </h2>
+              </div>
+              <Link
+                href={`/series/${s.id}/`}
+                class="hidden sm:inline-flex items-center gap-1 text-xs font-medium text-foreground hover:underline"
+              >
+                Barchasi &rarr;
+              </Link>
+            </div>
+
+            <p class="text-sm text-muted-foreground mt-2 leading-relaxed">
+              {s.data.description}
+            </p>
+
+            <div class="mt-5 border-t border-border/50 pt-4">
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Turkum tarkibi:
+              </h3>
+              <ol class="flex flex-col gap-y-2 text-xs">
+                {posts.map((p: any, idx: number) => (
+                  <li class="flex items-center gap-2">
+                    <span class="flex size-5 shrink-0 items-center justify-center rounded-full bg-secondary font-mono text-[10px] text-muted-foreground font-semibold">
+                      {idx + 1}
+                    </span>
+                    <Link href={`/blog/${p.id}/`} class="hover:underline text-foreground font-medium truncate">
+                      {p.data.title}
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </article>
+        )
+      })
+    }
+  </div>
+</Layout>

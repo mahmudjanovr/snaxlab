@@ -7,9 +7,10 @@ import Head from '@/components/Head.astro'
 import Header from '@/components/Header.astro'
 import ReadingProgress from '@/components/ReadingProgress.astro'
 import BackToTop from '@/components/BackToTop.astro'
+import ImageLightbox from '@/components/ImageLightbox.astro'
+import KeyboardShortcutsModal from '@/components/KeyboardShortcutsModal.astro'
 import { SITE } from '@/consts'
 import { cn } from '@/lib/utils'
-
 
 const { class: className } = Astro.props
 ---
@@ -22,6 +23,8 @@ const { class: className } = Astro.props
   <body>
     <ReadingProgress />
     <BackToTop />
+    <ImageLightbox />
+    <KeyboardShortcutsModal />
     <div class="flex h-fit min-h-screen flex-col gap-y-6 font-sans">
       <div
         class="bg-background/50 sticky top-0 z-50 divide-y backdrop-blur-sm xl:divide-none"

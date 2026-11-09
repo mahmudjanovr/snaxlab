@@ -1,0 +1,78 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import PageHead from '@/components/PageHead.astro'
+import Link from '@/components/Link.astro'
+import Layout from '@/layouts/Layout.astro'
+import { Icon } from 'astro-icon/components'
+---
+
+<Layout class="max-w-3xl">
+  <PageHead
+    slot="head"
+    title="Aloqa va bog'lanish"
+    description="Rahmatillo Mahmudjanov bilan bog'lanish: Telegram, elektron pochta va ijtimoiy tarmoqlar."
+  />
+
+  <Breadcrumbs items={[{ label: 'Aloqa', icon: 'lucide:send' }]} />
+
+  <section class="flex flex-col gap-y-3">
+    <h1 class="text-3xl font-bold tracking-tight">Aloqa</h1>
+    <p class="text-muted-foreground text-sm leading-relaxed">
+      Savollar, adabiy va falsafiy fikr almashish, takliflar yoki hamkorlik uchun quyidagi rasmiy kanallar orqali murojaat qilishingiz mumkin.
+    </p>
+  </section>
+
+  <div class="mt-8 flex flex-col gap-4">
+    <div class="rounded-xl border border-border bg-secondary/15 p-5 flex items-start gap-4">
+      <div class="size-10 rounded-full bg-sky-500/10 text-sky-500 flex items-center justify-center shrink-0">
+        <Icon name="lucide:send" class="size-5" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <h2 class="text-sm font-semibold text-foreground">Telegram (Eng tezkor)</h2>
+        <p class="text-xs text-muted-foreground">To'g'ridan-to'g'ri shaxsiy xabar yuborish uchun eng qulay yo'l.</p>
+        <Link href="https://t.me/mahmudjanovr" target="_blank" rel="noopener noreferrer" class="text-xs text-primary font-medium hover:underline mt-1">
+          @mahmudjanovr &rarr;
+        </Link>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-border bg-secondary/15 p-5 flex items-start gap-4">
+      <div class="size-10 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+        <Icon name="lucide:mail" class="size-5" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <h2 class="text-sm font-semibold text-foreground">Elektron pochta</h2>
+        <p class="text-xs text-muted-foreground">Katta xatlar, tahliliy maqolalar yoki rasmiy masalalar uchun.</p>
+        <Link href="mailto:snaxcyz@gmail.com" class="text-xs text-primary font-medium hover:underline mt-1">
+          snaxcyz@gmail.com &rarr;
+        </Link>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-border bg-secondary/15 p-5 flex items-start gap-4">
+      <div class="size-10 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
+        <Icon name="lucide:twitter" class="size-5" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <h2 class="text-sm font-semibold text-foreground">Twitter / X</h2>
+        <p class="text-xs text-muted-foreground">Qisqa fikrlar, yangiliklar va texnologik xabarlar.</p>
+        <Link href="https://x.com/mahmudjanovr" target="_blank" rel="noopener noreferrer" class="text-xs text-primary font-medium hover:underline mt-1">
+          @mahmudjanovr &rarr;
+        </Link>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-border bg-secondary/15 p-5 flex items-start gap-4">
+      <div class="size-10 rounded-full bg-foreground/10 text-foreground flex items-center justify-center shrink-0">
+        <Icon name="lucide:github" class="size-5" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <h2 class="text-sm font-semibold text-foreground">GitHub</h2>
+        <p class="text-xs text-muted-foreground">Ochiq kodli loyihalar, masalalar (issues) va pull requestlar.</p>
+        <Link href="https://github.com/mahmudjanovr" target="_blank" rel="noopener noreferrer" class="text-xs text-primary font-medium hover:underline mt-1">
+          github.com/mahmudjanovr &rarr;
+        </Link>
+      </div>
+    </div>
+  </div>
+</Layout>

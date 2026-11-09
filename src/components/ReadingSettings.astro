@@ -1,0 +1,110 @@
+---
+import { Icon } from 'astro-icon/components'
+---
+
+<div id="reading-settings-panel" class="flex items-center gap-1.5 text-xs text-muted-foreground">
+  <span class="sr-only">Mutolaa sozlamalari</span>
+
+  <!-- Font size cycle -->
+  <button
+    id="font-size-toggle"
+    type="button"
+    class="inline-flex size-7 items-center justify-center rounded border border-border bg-background text-xs font-semibold hover:bg-secondary cursor-pointer"
+    aria-label="Shrift o'lchamini o'zgartirish"
+    title="Shrift o'lchami (A / A+)"
+  >
+    <span id="font-size-label">A</span>
+  </button>
+
+  <!-- Focus / width toggle -->
+  <button
+    id="focus-mode-toggle"
+    type="button"
+    class="inline-flex size-7 items-center justify-center rounded border border-border bg-background hover:bg-secondary cursor-pointer"
+    aria-label="Fokusli mutolaa rejimi"
+    title="Fokusli mutolaa (kengaytirilgan/oddiy)"
+    aria-pressed="false"
+  >
+    <Icon name="lucide:minimize-2" class="size-3.5 focus-icon-shrink hidden" />
+    <Icon name="lucide:maximize-2" class="size-3.5 focus-icon-expand" />
+  </button>
+</div>
+
+<script>
+  const STORAGE_KEY = 'snaxlab_reading_settings_v1'
+
+  function getSettings() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
+    } catch {
+      return {}
+    }
+  }
+
+  function saveSettings(settings: any) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
+    } catch {}
+  }
+
+  function setupReadingSettings() {
+    const fontBtn = document.getElementById('font-size-toggle')
+    const focusBtn = document.getElementById('focus-mode-toggle')
+    const fontLabel = document.getElementById('font-size-label')
+    const article = document.querySelector('main article')
+    if (!article) return
+
+    const settings = getSettings()
+    let fontLevel = settings.fontLevel || 0 // 0: normal, 1: large, 2: extra
+    let isFocus = settings.focus || false
+
+    const fontClasses = ['prose-base', 'text-lg', 'text-xl']
+    const fontLabels = ['A', 'A+', 'A++']
+
+    function apply() {
+      // Font size
+      article?.classList.remove('text-lg', 'text-xl')
+      if (fontLevel === 1) article?.classList.add('text-lg')
+      if (fontLevel === 2) article?.classList.add('text-xl')
+      if (fontLabel) fontLabel.textContent = fontLabels[fontLevel]
+
+      // Focus mode
+      const shrinkIcon = focusBtn?.querySelector('.focus-icon-shrink')
+      const expandIcon = focusBtn?.querySelector('.focus-icon-expand')
+      const sidebar = document.getElementById('toc-sidebar-container')
+
+      if (isFocus) {
+        focusBtn?.setAttribute('aria-pressed', 'true')
+        shrinkIcon?.classList.remove('hidden')
+        expandIcon?.classList.add('hidden')
+        if (sidebar) sidebar.classList.add('opacity-30', 'hover:opacity-100', 'transition-opacity')
+      } else {
+        focusBtn?.setAttribute('aria-pressed', 'false')
+        shrinkIcon?.classList.add('hidden')
+        expandIcon?.classList.remove('hidden')
+        if (sidebar) sidebar.classList.remove('opacity-30', 'hover:opacity-100', 'transition-opacity')
+      }
+
+      saveSettings({ fontLevel, focus: isFocus })
+    }
+
+    apply()
+
+    if (fontBtn) {
+      fontBtn.onclick = () => {
+        fontLevel = (fontLevel + 1) % 3
+        apply()
+      }
+    }
+
+    if (focusBtn) {
+      focusBtn.onclick = () => {
+        isFocus = !isFocus
+        apply()
+      }
+    }
+  }
+
+  setupReadingSettings()
+  document.addEventListener('astro:page-load', setupReadingSettings)
+</script>

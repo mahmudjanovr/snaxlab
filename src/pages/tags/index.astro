@@ -11,23 +11,69 @@ const sortedTags = await getSortedTags()
 ---
 
 <Layout class="max-w-3xl">
-  <PageHead slot="head" title="Teglar" />
+  <PageHead
+    slot="head"
+    title="Teglar va mavzular katalogi"
+    description="SnaxLab barcha maqolalari mavzular va teglar bo'yicha saralangan katalogi."
+  />
   <Breadcrumbs items={[{ label: 'Teglar', icon: 'lucide:tags' }]} />
 
-  <div class="flex flex-col gap-4">
-    <div class="flex flex-wrap gap-2">
+  <section class="flex flex-col gap-y-4">
+    <div class="flex flex-col gap-y-2">
+      <h1 class="text-3xl font-bold tracking-tight">Teglar va mavzular</h1>
+      <p class="text-muted-foreground text-sm">
+        Blogdagi barcha mavzular ro'yxati. O'zingizga qiziq bo'lgan mavzuni tanlang.
+      </p>
+    </div>
+
+    <div class="relative my-2">
+      <input
+        id="tag-search"
+        type="search"
+        placeholder="Teg nomini yozing..."
+        aria-label="Teglarni filtrlash"
+        class="w-full rounded-md border border-border bg-background px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
+      />
+    </div>
+
+    <div id="tags-container" class="flex flex-wrap gap-2 pt-2">
       {
         sortedTags.map(({ tag, count }) => (
           <Link
             href={`/tags/${tag}`}
-            class={badgeVariants({ variant: 'secondary' })}
+            class={badgeVariants({ variant: 'secondary' }) + ' tag-item py-1.5 px-3 text-xs transition-colors hover:bg-primary hover:text-primary-foreground'}
+            data-tag={tag.toLowerCase()}
           >
-            <Icon name="lucide:hash" class="size-3" />
-            {tag}
-            <span class="text-muted-foreground ml-1.5">({count})</span>
+            <Icon name="lucide:hash" class="size-3 mr-1" />
+            <span>{tag}</span>
+            <span class="text-muted-foreground ml-1.5 opacity-80">({count})</span>
           </Link>
         ))
       }
     </div>
-  </div>
+  </section>
+
+  <script>
+    function setupTagSearch() {
+      const input = document.getElementById('tag-search') as HTMLInputElement | null
+      const container = document.getElementById('tags-container')
+      if (!input || !container) return
+
+      input.oninput = () => {
+        const q = input.value.trim().toLowerCase()
+        const items = container.querySelectorAll('.tag-item')
+        items.forEach((item) => {
+          const tag = item.getAttribute('data-tag') || ''
+          if (!q || tag.includes(q)) {
+            (item as HTMLElement).style.display = 'inline-flex'
+          } else {
+            (item as HTMLElement).style.display = 'none'
+          }
+        })
+      }
+    }
+
+    setupTagSearch()
+    document.addEventListener('astro:page-load', setupTagSearch)
+  </script>
 </Layout>

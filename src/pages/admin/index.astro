@@ -33,6 +33,7 @@ const pageTitle = 'SnaxLab Admin'
 
         <nav class="nav" aria-label="Admin sections">
           <a class="nav-item active" href="#editor">Editor</a>
+          <a class="nav-item" href="#manager">Maqolalar</a>
           <a class="nav-item" href="#preview">Preview</a>
           <a class="nav-item" href="#publish">Publish</a>
         </nav>
@@ -73,7 +74,24 @@ const pageTitle = 'SnaxLab Admin'
         </section>
 
         <section class="grid">
+
+        <section class="panel manager" id="manager" style="display:none;">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">GitHub repozitoriy</p>
+              <h3>Mavjud maqolalar</h3>
+            </div>
+            <button class="ghost" id="refreshPostsBtn" type="button">Ro'yxatni yangilash</button>
+          </div>
+          <p class="message" id="managerStatus">Maqolalarni ko'rish va boshqarish uchun yuqoridagi parolni kiriting va "Ro'yxatni yangilash" tugmasini bosing.</p>
+          <div class="posts-table-wrapper" id="postsList"></div>
+        </section>
+
           <form class="panel editor" id="postForm">
+            <div id="editingBanner" style="display:none; padding:10px 14px; margin-bottom:12px; background:var(--surface-soft); border:1px solid var(--border-strong); border-radius:var(--radius); display:none; align-items:center; justify-content:space-between; font-size:12px;">
+              <span>Tahrirlanmoqda: <strong id="editingFileName"></strong></span>
+              <button type="button" class="danger" id="cancelEditBtn" style="padding:4px 8px; font-size:11px;">Bekor qilish</button>
+            </div>
             <div class="panel-head" id="editor">
               <div>
                 <p class="eyebrow">Article metadata</p>
@@ -487,7 +505,7 @@ ${data.body}
           const res = await fetch('/api/create-post', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(getData()),
+            body: JSON.stringify(currentEditing ? { ...getData(), action: 'update', path: currentEditing.path, sha: currentEditing.sha, content: makeMdx(getArticleData()) } : getData()),
           })
 
           const result = await res.json().catch(() => ({}))
@@ -513,12 +531,210 @@ ${data.body}
       })
 
       const navItems = document.querySelectorAll('.nav-item')
+      
       function updateActiveNav(hash) {
         const targetHash = hash || window.location.hash || '#editor'
         navItems.forEach((item) => {
           item.classList.toggle('active', item.getAttribute('href') === targetHash)
         })
+        if (managerPanel) {
+          managerPanel.style.display = targetHash === '#manager' ? 'block' : 'none'
+        }
+        const editorForm = document.getElementById('postForm')
+        const previewSec = document.getElementById('preview')
+        if (targetHash === '#manager') {
+          if (editorForm) editorForm.style.display = 'none'
+          if (previewSec) previewSec.style.display = 'none'
+        } else {
+          if (editorForm) editorForm.style.display = ''
+          if (previewSec) previewSec.style.display = ''
+        }
       }
+
+
+      
+      let currentEditing = null
+      const managerPanel = document.getElementById('manager')
+      const refreshPostsBtn = document.getElementById('refreshPostsBtn')
+      const managerStatus = document.getElementById('managerStatus')
+      const postsList = document.getElementById('postsList')
+      const editingBanner = document.getElementById('editingBanner')
+      const editingFileName = document.getElementById('editingFileName')
+      const cancelEditBtn = document.getElementById('cancelEditBtn')
+
+      function parseMdxFrontmatter(raw) {
+        const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/)
+        if (!match) return { frontmatter: {}, body: raw }
+        const yaml = match[1]
+        const body = match[2]
+        const fm = {}
+        yaml.split(/\r?\n/).forEach((line) => {
+          const colonIdx = line.indexOf(':')
+          if (colonIdx > -1) {
+            const key = line.slice(0, colonIdx).trim()
+            let val = line.slice(colonIdx + 1).trim()
+            if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1)
+            try {
+              if (val.startsWith('[') && val.endsWith(']')) val = JSON.parse(val)
+            } catch {}
+            fm[key] = val
+          }
+        })
+        return { frontmatter: fm, body: body.trim() }
+      }
+
+      function cancelEditing() {
+        currentEditing = null
+        if (editingBanner) editingBanner.style.display = 'none'
+        form.reset()
+        fields.author.value = 'snaxcyz'
+        fields.slug.dataset.touched = ''
+        const submitBtn = form.querySelector('button[type="submit"]')
+        if (submitBtn) submitBtn.textContent = 'Publish to SnaxLab'
+        updatePreview()
+      }
+
+      if (cancelEditBtn) cancelEditBtn.addEventListener('click', cancelEditing)
+
+      async function loadPosts() {
+        const password = fields.password.value
+        if (!password) {
+          if (managerStatus) {
+            managerStatus.textContent = 'Iltimos, avval parolni kiriting.'
+            managerStatus.className = 'message error'
+          }
+          return
+        }
+        if (managerStatus) {
+          managerStatus.textContent = 'Maqolalar yuklanmoqda...'
+          managerStatus.className = 'message'
+        }
+        try {
+          const res = await fetch('/api/create-post', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password, action: 'list' }),
+          })
+          const data = await res.json()
+          if (!res.ok) throw new Error(data.error || 'Yuklashda xatolik')
+          renderPostsTable(data.posts || [])
+          if (managerStatus) {
+            managerStatus.textContent = `Jami ${data.posts.length} ta maqola topildi.`
+            managerStatus.className = 'message success'
+          }
+        } catch (err) {
+          if (managerStatus) {
+            managerStatus.textContent = err.message
+            managerStatus.className = 'message error'
+          }
+        }
+      }
+
+      if (refreshPostsBtn) refreshPostsBtn.addEventListener('click', loadPosts)
+
+      function renderPostsTable(posts) {
+        if (!postsList) return
+        if (!posts.length) {
+          postsList.innerHTML = '<p class="text-xs text-muted">Maqolalar yoq.</p>'
+          return
+        }
+        postsList.innerHTML = `
+          <table class="posts-table">
+            <thead>
+              <tr>
+                <th>Fayl nomi</th>
+                <th>Hajmi</th>
+                <th>Amallar</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${posts.map(p => `
+                <tr>
+                  <td><code>${p.name}</code></td>
+                  <td>${Math.round(p.size / 1024 * 10) / 10} kB</td>
+                  <td>
+                    <div class="action-btns">
+                      <button type="button" class="action-btn edit" data-path="${p.path}">Tahrirlash</button>
+                      <button type="button" class="action-btn del" data-path="${p.path}" data-sha="${p.sha}">O'chirish</button>
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `
+
+        postsList.querySelectorAll('.action-btn.edit').forEach(btn => {
+          btn.addEventListener('click', () => editPost(btn.getAttribute('data-path')))
+        })
+        postsList.querySelectorAll('.action-btn.del').forEach(btn => {
+          btn.addEventListener('click', () => deletePost(btn.getAttribute('data-path'), btn.getAttribute('data-sha')))
+        })
+      }
+
+      async function editPost(filePath) {
+        const password = fields.password.value
+        if (!password) {
+          alert('Iltimos, avval parolni kiriting.')
+          return
+        }
+        try {
+          const res = await fetch('/api/create-post', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password, action: 'get', path: filePath }),
+          })
+          const data = await res.json()
+          if (!res.ok) throw new Error(data.error || 'Postni olishda xatolik')
+          
+          const parsed = parseMdxFrontmatter(data.content)
+          currentEditing = { path: data.path, sha: data.sha }
+
+          fields.title.value = parsed.frontmatter.title || ''
+          fields.description.value = parsed.frontmatter.description || ''
+          fields.draft.value = parsed.frontmatter.draft ? 'true' : 'false'
+          fields.slug.value = filePath.replace(/^src\/content\/blog\//, '').replace(/-uz\.mdx$/, '').replace(/\.mdx$/, '')
+          fields.slug.dataset.touched = 'true'
+          fields.tags.value = Array.isArray(parsed.frontmatter.tags) ? parsed.frontmatter.tags.join(', ') : (parsed.frontmatter.tags || '')
+          fields.author.value = parsed.frontmatter.author || 'snaxcyz'
+          fields.body.value = parsed.body || ''
+
+          if (editingFileName) editingFileName.textContent = filePath
+          if (editingBanner) editingBanner.style.display = 'flex'
+          const submitBtn = form.querySelector('button[type="submit"]')
+          if (submitBtn) submitBtn.textContent = "O'zgarishlarni saqlash"
+
+          window.location.hash = '#editor'
+          updatePreview()
+          setMessage(`Tahrirlash rejimi: ${filePath}`, 'success')
+        } catch (err) {
+          alert(err.message)
+        }
+      }
+
+      async function deletePost(filePath, sha) {
+        const password = fields.password.value
+        if (!password) {
+          alert('Iltimos, avval parolni kiriting.')
+          return
+        }
+        if (!confirm(`Haqiqatan ham "${filePath}" maqolasini o'chirmoqchimisiz?`)) return
+
+        try {
+          const res = await fetch('/api/create-post', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password, action: 'delete', path: filePath, sha }),
+          })
+          const data = await res.json()
+          if (!res.ok) throw new Error(data.error || 'O\'chirishda xatolik')
+          alert("Maqola muvaffaqiyatli o'chirildi.")
+          loadPosts()
+        } catch (err) {
+          alert(err.message)
+        }
+      }
+
 
       window.addEventListener('hashchange', () => updateActiveNav())
       navItems.forEach((item) => {
@@ -1263,6 +1479,53 @@ ${data.body}
           word-break: break-word;
         }
       }
+    
+      .manager {
+        grid-column: 1 / -1;
+      }
+      .posts-table-wrapper {
+        margin-top: 1rem;
+        overflow-x: auto;
+      }
+      .posts-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        text-align: left;
+      }
+      .posts-table th, .posts-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+      }
+      .posts-table th {
+        color: var(--muted);
+        font-weight: 500;
+        text-transform: uppercase;
+        font-size: 11px;
+      }
+      .posts-table tr:hover {
+        background: var(--surface-soft);
+      }
+      .action-btns {
+        display: flex;
+        gap: 6px;
+      }
+      .action-btn {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        cursor: pointer;
+      }
+      .action-btn:hover {
+        background: var(--surface-muted);
+      }
+      .action-btn.del {
+        color: var(--danger);
+        border-color: var(--danger);
+      }
+
     </style>
   </body>
 </html>

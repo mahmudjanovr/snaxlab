@@ -1,0 +1,69 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import PageHead from '@/components/PageHead.astro'
+import { Badge } from '@/components/ui/badge'
+import Layout from '@/layouts/Layout.astro'
+import { getAllQuotes } from '@/lib/data-utils'
+
+const quotes = await getAllQuotes()
+---
+
+<Layout class="max-w-3xl">
+  <PageHead
+    slot="head"
+    title="Iqtiboslar arxivi"
+    description="Falsafa, adabiyot va san'at durdonalaridan olingan eng teran va ta'sirli iqtiboslar to'plami."
+  />
+
+  <Breadcrumbs items={[{ label: 'Iqtiboslar', icon: 'lucide:quote' }]} />
+
+  <section class="flex flex-col gap-y-3">
+    <h1 class="text-3xl font-bold tracking-tight">Iqtiboslar arxivi</h1>
+    <p class="text-muted-foreground text-sm leading-relaxed">
+      Mutolaa davomida qalbga muhrlangan, tafakkurni uyg'otuvchi va hayot haqidagi qarashlarni o'zgartiruvchi fikrlar.
+    </p>
+  </section>
+
+  <div class="mt-8 flex flex-col gap-y-6">
+    {
+      quotes.map((q) => (
+        <article class="rounded-xl border border-border bg-secondary/15 p-6 transition-all hover:bg-secondary/25 flex flex-col gap-y-4">
+          <blockquote class="text-base sm:text-lg font-serif italic text-foreground leading-relaxed border-l-3 border-primary/60 pl-4 py-1">
+            "{q.data.quote}"
+          </blockquote>
+
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-border/50 pt-3 text-xs">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-foreground">{q.data.author}</span>
+              {q.data.work && (
+                <>
+                  <span class="text-muted-foreground">&bull;</span>
+                  <span class="text-muted-foreground italic">{q.data.work}</span>
+                </>
+              )}
+              {q.data.year && (
+                <span class="text-muted-foreground font-mono">({q.data.year})</span>
+              )}
+            </div>
+
+            {q.data.tags && q.data.tags.length > 0 && (
+              <div class="flex flex-wrap gap-1">
+                {q.data.tags.map((t: string) => (
+                  <Badge variant="secondary" className="text-[10px] py-0 px-1.5">
+                    #{t}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {q.data.commentary && (
+            <p class="text-xs text-muted-foreground/90 bg-secondary/30 p-2.5 rounded-lg border border-border/40">
+              <strong class="text-foreground/80 font-medium">Mushohada:</strong> {q.data.commentary}
+            </p>
+          )}
+        </article>
+      ))
+    }
+  </div>
+</Layout>

@@ -1,0 +1,17 @@
+---
+interface Props {
+  note?: string
+}
+
+const { note } = Astro.props
+---
+
+<aside
+  class="relative my-4 rounded-md border-l-2 border-primary/40 bg-secondary/30 px-3 py-2 text-xs italic text-muted-foreground xl:my-0 xl:inline-block xl:border-l-2 xl:bg-transparent xl:p-0 xl:text-[11px]"
+  aria-label="Muallif izohi"
+>
+  <span class="font-medium not-italic text-foreground/80 xl:block xl:text-[10px] xl:uppercase xl:tracking-wider">
+    Izoh:
+  </span>
+  <slot>{note}</slot>
+</aside>

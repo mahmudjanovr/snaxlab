@@ -1,0 +1,129 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import PageHead from '@/components/PageHead.astro'
+import Link from '@/components/Link.astro'
+import Layout from '@/layouts/Layout.astro'
+import { Icon } from 'astro-icon/components'
+---
+
+<Layout class="max-w-3xl">
+  <PageHead
+    slot="head"
+    title="Saqlangan maqolalar"
+    description="Keyinroq o'qish uchun saqlab qo'yilgan maqolalar ro'yxati."
+    noindex
+  />
+
+  <Breadcrumbs items={[{ label: 'Saqlanganlar', icon: 'lucide:bookmark-check' }]} />
+
+  <section class="flex flex-col gap-y-3">
+    <div class="flex items-center justify-between">
+      <h1 class="text-3xl font-bold tracking-tight">Saqlangan maqolalar</h1>
+      <button
+        id="clear-all-bookmarks"
+        type="button"
+        class="hidden text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+      >
+        Barchasini tozalash
+      </button>
+    </div>
+    <p class="text-muted-foreground text-sm leading-relaxed">
+      Ushbu maqolalar sizning brauzeringizda (<code class="text-xs">localStorage</code>) saqlanadi. Maqolalarni keyinroq o'qish uchun saqlab qo'yishingiz mumkin.
+    </p>
+  </section>
+
+  <!-- Container for rendered items -->
+  <div id="saved-articles-container" class="mt-8 flex flex-col gap-4"></div>
+
+  <!-- Empty state template -->
+  <div id="saved-empty-state" class="hidden mt-8 rounded-xl border border-dashed border-border p-12 text-center">
+    <div class="flex flex-col items-center justify-center gap-y-3">
+      <div class="size-12 rounded-full bg-secondary flex items-center justify-center text-muted-foreground">
+        <Icon name="lucide:bookmark" class="size-6" />
+      </div>
+      <h2 class="text-base font-semibold text-foreground">Hozircha saqlangan maqolalar yo'q</h2>
+      <p class="text-xs text-muted-foreground max-w-sm">
+        O'zingizga ma'qul kelgan maqolaning yuqorisidagi yoki pastidagi "Saqlash" tugmasini bosing.
+      </p>
+      <Link href="/blog" class="mt-2 inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+        Maqolalarni ko'rish &rarr;
+      </Link>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'snaxlab_saved_articles_v1'
+
+    function renderBookmarks() {
+      const container = document.getElementById('saved-articles-container')
+      const emptyState = document.getElementById('saved-empty-state')
+      const clearBtn = document.getElementById('clear-all-bookmarks')
+      if (!container || !emptyState) return
+
+      let items = []
+      try {
+        items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+      } catch {
+        items = []
+      }
+
+      if (!items || items.length === 0) {
+        container.innerHTML = ''
+        emptyState.classList.remove('hidden')
+        clearBtn?.classList.add('hidden')
+        return
+      }
+
+      emptyState.classList.add('hidden')
+      clearBtn?.classList.remove('hidden')
+
+      container.innerHTML = items.map((item: any) => `
+        <article class="group relative flex items-start justify-between gap-4 rounded-xl border border-border p-5 transition-colors hover:bg-secondary/30">
+          <div class="flex flex-col gap-1 grow min-w-0">
+            <h2 class="text-base font-semibold leading-snug">
+              <a href="${item.href}" class="outline-none hover:underline">
+                ${item.title}
+              </a>
+            </h2>
+            ${item.description ? `<p class="text-xs text-muted-foreground line-clamp-2">${item.description}</p>` : ''}
+          </div>
+          <button
+            type="button"
+            class="remove-bookmark-btn shrink-0 rounded p-1 text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+            data-id="${item.id}"
+            title="O'chirish"
+            aria-label="${item.title} maqolasini saqlanganlardan o'chirish"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </article>
+      `).join('')
+
+      container.querySelectorAll('.remove-bookmark-btn').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation()
+          const id = (btn as HTMLElement).getAttribute('data-id')
+          const updated = items.filter((i: any) => i.id !== id)
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+          renderBookmarks()
+        })
+      })
+
+      if (clearBtn) {
+        clearBtn.onclick = () => {
+          if (confirm('Barcha saqlangan maqolalarni ro\'yxatdan o\'chirmoqchimisiz?')) {
+            localStorage.removeItem(STORAGE_KEY)
+            renderBookmarks()
+          }
+        }
+      }
+    }
+
+    renderBookmarks()
+    document.addEventListener('astro:page-load', renderBookmarks)
+    window.addEventListener('snaxlab:bookmarks-changed', renderBookmarks)
+  </script>
+</Layout>

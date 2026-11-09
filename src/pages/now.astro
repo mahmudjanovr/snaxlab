@@ -1,0 +1,84 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import PageHead from '@/components/PageHead.astro'
+import Link from '@/components/Link.astro'
+import Layout from '@/layouts/Layout.astro'
+import { Icon } from 'astro-icon/components'
+
+const lastUpdated = "2026-11-09"
+---
+
+<Layout class="max-w-3xl">
+  <PageHead
+    slot="head"
+    title="Now — Hozir nimalar bilan bandman"
+    description="Rahmatillo Mahmudjanov (snaxcyz) ayni vaqtda nimalar o'qimoqda, o'rganmoqda va yaratmoqda."
+  />
+
+  <Breadcrumbs items={[{ label: 'Now', icon: 'lucide:clock' }]} />
+
+  <section class="flex flex-col gap-y-4">
+    <div class="flex flex-col gap-y-1">
+      <h1 class="text-3xl font-bold tracking-tight">Now / Hozir</h1>
+      <p class="text-xs text-muted-foreground flex items-center gap-1.5">
+        <Icon name="lucide:calendar" class="size-3.5" />
+        Oxirgi yangilanish: {lastUpdated} &bull; Toshkent, O'zbekiston
+      </p>
+    </div>
+
+    <p class="text-sm text-muted-foreground leading-relaxed">
+      Ushbu sahifa Derek Siversning <Link href="https://nownownow.com/about" target="_blank" class="underline">"Now page"</Link> harakatidan ilhomlangan holda ayni kunlarda nimalar ustida ishlayotganim, nimalar o'qiyotganim va qanday g'oyalarni tadqiq qilayotganim haqida qisqacha ma'lumot beradi.
+    </p>
+  </section>
+
+  <div class="mt-8 flex flex-col gap-y-8 divide-y divide-border/60">
+    <!-- Working on -->
+    <div class="pt-6 first:pt-0 flex flex-col gap-y-3">
+      <h2 class="text-lg font-semibold flex items-center gap-2">
+        <Icon name="lucide:laptop" class="size-4 text-primary" />
+        Hozir nimalar yaratyapman?
+      </h2>
+      <ul class="flex flex-col gap-y-2 text-sm text-foreground/90 list-disc list-inside leading-relaxed">
+        <li>
+          <strong>SnaxLab platformasi:</strong> Shaxsiy nashrni kitob javoni, to'liq matnli qidiruv, seriyalar va tezyurar arxitektura bilan kengaytirish ustida ishlayapman.
+        </li>
+        <li>
+          <strong>Operatsion tizimlar va Linux:</strong> Arch Linux va Wayland asosida o'ta yengil dasturlash muhitini optimallashtirmoqdaman.
+        </li>
+      </ul>
+    </div>
+
+    <!-- Reading -->
+    <div class="pt-6 flex flex-col gap-y-3">
+      <h2 class="text-lg font-semibold flex items-center gap-2">
+        <Icon name="lucide:book-open" class="size-4 text-primary" />
+        Nimalar mutolaa qilyapman?
+      </h2>
+      <ul class="flex flex-col gap-y-2 text-sm text-foreground/90 list-disc list-inside leading-relaxed">
+        <li>
+          <strong>The Architecture of TempleOS:</strong> Terry Davisning mustaqil operatsion tizim dizayni va kompilyator g'oyalari.
+        </li>
+        <li>
+          <strong>Fyodor Dostoyevskiy va Yevropa ekzistensializmi:</strong> Mumtoz adabiyotdagi axloqiy ziddiyatlar tahlili.
+          <Link href="/bookshelf" class="text-primary hover:underline ml-1">(Kitob javonim &rarr;)</Link>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Exploring -->
+    <div class="pt-6 flex flex-col gap-y-3">
+      <h2 class="text-lg font-semibold flex items-center gap-2">
+        <Icon name="lucide:compass" class="size-4 text-primary" />
+        Nimalarni tadqiq qilyapman?
+      </h2>
+      <ul class="flex flex-col gap-y-2 text-sm text-foreground/90 list-disc list-inside leading-relaxed">
+        <li>
+          Web standartlar, serverless arxitektura va Astro yordamida JavaScript yukini kamaytirish.
+        </li>
+        <li>
+          Konseptual musiqiy albomlar dramaturgiyasi (Kendrick Lamar, Radiohead, Pink Floyd).
+        </li>
+      </ul>
+    </div>
+  </div>
+</Layout>

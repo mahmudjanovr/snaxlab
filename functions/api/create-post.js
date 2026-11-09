@@ -82,6 +82,133 @@ export async function onRequestPost(context) {
     return json({ error: 'Wrong admin password.' }, 401)
   }
 
+  const githubHeaders = {
+    Authorization: `Bearer ${githubToken}`,
+    Accept: 'application/vnd.github+json',
+    'Content-Type': 'application/json',
+    'X-GitHub-Api-Version': GITHUB_API_VERSION,
+    'User-Agent': 'snaxlab-admin',
+  }
+
+  const action = typeof payload.action === 'string' ? payload.action.trim() : 'create'
+
+  // ACTION: List existing posts
+  if (action === 'list') {
+    try {
+      const listRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/src/content/blog?ref=${encodeURIComponent(branch)}`,
+        { method: 'GET', headers: githubHeaders },
+      )
+      if (!listRes.ok) {
+        return json({ error: 'GitHub API could not list posts.' }, listRes.status)
+      }
+      const files = await listRes.json()
+      const posts = Array.isArray(files)
+        ? files
+            .filter((f) => f.name.endsWith('.mdx') || f.name.endsWith('.md'))
+            .map((f) => ({
+              name: f.name,
+              path: f.path,
+              sha: f.sha,
+              size: f.size,
+            }))
+        : []
+      return json({ ok: true, posts })
+    } catch {
+      return json({ error: 'Failed to fetch post list.' }, 500)
+    }
+  }
+
+  // ACTION: Get single post content and SHA
+  if (action === 'get') {
+    const filePath = typeof payload.path === 'string' ? payload.path.trim() : ''
+    if (!filePath.startsWith('src/content/blog/') || filePath.includes('..')) {
+      return json({ error: 'Invalid file path.' }, 400)
+    }
+    try {
+      const getRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(filePath)}?ref=${encodeURIComponent(branch)}`,
+        { method: 'GET', headers: githubHeaders },
+      )
+      if (!getRes.ok) {
+        return json({ error: 'Post was not found in repository.' }, getRes.status)
+      }
+      const fileData = await getRes.json()
+      const decodedContent = base64ToUtf8(fileData.content || '')
+      return json({
+        ok: true,
+        path: fileData.path,
+        sha: fileData.sha,
+        content: decodedContent,
+      })
+    } catch {
+      return json({ error: 'Failed to retrieve post content.' }, 500)
+    }
+  }
+
+  // ACTION: Delete single post
+  if (action === 'delete') {
+    const filePath = typeof payload.path === 'string' ? payload.path.trim() : ''
+    const sha = typeof payload.sha === 'string' ? payload.sha.trim() : ''
+    if (!filePath.startsWith('src/content/blog/') || filePath.includes('..') || !sha) {
+      return json({ error: 'File path and sha are required to delete.' }, 400)
+    }
+    try {
+      const delRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(filePath)}`,
+        {
+          method: 'DELETE',
+          headers: githubHeaders,
+          body: JSON.stringify({
+            message: `Delete blog post: ${filePath.replace(/^src\/content\/blog\//, '')}`,
+            sha,
+            branch,
+          }),
+        },
+      )
+      if (!delRes.ok) {
+        return json({ error: 'GitHub could not delete the post.' }, delRes.status)
+      }
+      return json({ ok: true, deleted: filePath })
+    } catch {
+      return json({ error: 'Failed to delete post.' }, 500)
+    }
+  }
+
+  // ACTION: Update existing post
+  if (action === 'update') {
+    const filePath = typeof payload.path === 'string' ? payload.path.trim() : ''
+    const sha = typeof payload.sha === 'string' ? payload.sha.trim() : ''
+    const content = typeof payload.content === 'string' ? payload.content : ''
+
+    if (!filePath.startsWith('src/content/blog/') || filePath.includes('..') || !sha || !content) {
+      return json({ error: 'Path, sha and content are required to update.' }, 400)
+    }
+
+    try {
+      const updateRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(filePath)}`,
+        {
+          method: 'PUT',
+          headers: githubHeaders,
+          body: JSON.stringify({
+            message: `Update blog post: ${filePath.replace(/^src\/content\/blog\//, '')}`,
+            content: utf8ToBase64(content),
+            sha,
+            branch,
+          }),
+        },
+      )
+      if (!updateRes.ok) {
+        return json({ error: 'GitHub could not update the post.' }, updateRes.status)
+      }
+      return json({ ok: true, updated: filePath })
+    } catch {
+      return json({ error: 'Failed to update post.' }, 500)
+    }
+  }
+
+  // ACTION: Create new post
   const title = normalizeText(payload.title)
   const description = normalizeText(payload.description)
   const body = typeof payload.body === 'string' ? payload.body.trim() : ''
@@ -138,14 +265,6 @@ export async function onRequestPost(context) {
     draft,
     body,
   })
-
-  const githubHeaders = {
-    Authorization: `Bearer ${githubToken}`,
-    Accept: 'application/vnd.github+json',
-    'Content-Type': 'application/json',
-    'X-GitHub-Api-Version': GITHUB_API_VERSION,
-    'User-Agent': 'snaxlab-admin',
-  }
 
   const contentsUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`
 
@@ -302,6 +421,16 @@ function utf8ToBase64(text) {
   }
 
   return btoa(binary)
+}
+
+function base64ToUtf8(b64) {
+  const clean = String(b64 || '').replace(/\s+/g, '')
+  const binary = atob(clean)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i)
+  }
+  return new TextDecoder().decode(bytes)
 }
 
 async function passwordsMatch(provided, expected) {

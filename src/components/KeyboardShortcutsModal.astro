@@ -1,0 +1,123 @@
+---
+import { Icon } from 'astro-icon/components'
+---
+
+<div
+  id="shortcuts-modal"
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-xs transition-opacity duration-200 opacity-0"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="shortcuts-title"
+>
+  <div class="relative w-full max-w-sm rounded-xl border border-border bg-background p-6 shadow-2xl">
+    <div class="flex items-center justify-between pb-3 border-b border-border">
+      <h3 id="shortcuts-title" class="text-sm font-semibold flex items-center gap-2">
+        <Icon name="lucide:command" class="size-4 text-primary" />
+        Klaviatura tugmalari
+      </h3>
+      <button
+        id="shortcuts-close-btn"
+        type="button"
+        class="rounded p-1 text-muted-foreground hover:text-foreground cursor-pointer"
+        aria-label="Yopish"
+      >
+        <Icon name="lucide:x" class="size-4" />
+      </button>
+    </div>
+
+    <ul class="mt-4 flex flex-col gap-3 text-xs">
+      <li class="flex items-center justify-between">
+        <span class="text-muted-foreground">Qidiruvni ochish</span>
+        <kbd class="rounded border border-border bg-secondary/50 px-1.5 py-0.5 font-mono text-[11px]">/</kbd>
+      </li>
+      <li class="flex items-center justify-between">
+        <span class="text-muted-foreground">Oyna va menyuni yopish</span>
+        <kbd class="rounded border border-border bg-secondary/50 px-1.5 py-0.5 font-mono text-[11px]">Esc</kbd>
+      </li>
+      <li class="flex items-center justify-between">
+        <span class="text-muted-foreground">Ushbu yordamni ochish</span>
+        <kbd class="rounded border border-border bg-secondary/50 px-1.5 py-0.5 font-mono text-[11px]">?</kbd>
+      </li>
+      <li class="flex items-center justify-between">
+        <span class="text-muted-foreground">Tepaga qaytish</span>
+        <span class="text-[11px] text-muted-foreground">Scroll &gt; 600px</span>
+      </li>
+    </ul>
+
+    <div class="mt-5 pt-3 border-t border-border flex justify-end">
+      <button
+        id="shortcuts-dismiss-btn"
+        type="button"
+        class="rounded-md border border-border bg-secondary/50 px-3 py-1 text-xs font-medium hover:bg-secondary cursor-pointer"
+      >
+        Yopish
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function setupShortcuts() {
+    const modal = document.getElementById('shortcuts-modal')
+    const closeBtn = document.getElementById('shortcuts-close-btn')
+    const dismissBtn = document.getElementById('shortcuts-dismiss-btn')
+    if (!modal) return
+
+    function openModal() {
+      modal?.classList.remove('hidden')
+      requestAnimationFrame(() => {
+        modal?.classList.remove('opacity-0')
+        modal?.classList.add('flex', 'opacity-100')
+      })
+      closeBtn?.focus()
+    }
+
+    function closeModal() {
+      modal?.classList.remove('opacity-100')
+      modal?.classList.add('opacity-0')
+      setTimeout(() => {
+        modal?.classList.remove('flex')
+        modal?.classList.add('hidden')
+      }, 200)
+    }
+
+    closeBtn?.addEventListener('click', closeModal)
+    dismissBtn?.addEventListener('click', closeModal)
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal()
+    })
+
+    window.addEventListener('keydown', (e) => {
+      const activeEl = document.activeElement
+      const isInput =
+        activeEl instanceof HTMLInputElement ||
+        activeEl instanceof HTMLTextAreaElement ||
+        (activeEl instanceof HTMLElement && activeEl.isContentEditable)
+
+      if (isInput) return
+
+      if (e.key === '?' && !e.shiftKey === false) {
+        e.preventDefault()
+        if (modal.classList.contains('hidden')) {
+          openModal()
+        } else {
+          closeModal()
+        }
+      }
+
+      if (e.key === 'Escape') {
+        if (!modal.classList.contains('hidden')) {
+          closeModal()
+        }
+      }
+
+      if (e.key === '/' && window.location.pathname !== '/search' && window.location.pathname !== '/search/') {
+        e.preventDefault()
+        window.location.href = '/search'
+      }
+    })
+  }
+
+  setupShortcuts()
+  document.addEventListener('astro:page-load', setupShortcuts)
+</script>

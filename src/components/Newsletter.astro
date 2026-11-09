@@ -1,0 +1,53 @@
+---
+import { Icon } from 'astro-icon/components'
+import Link from './Link.astro'
+---
+
+<section class="rounded-xl border border-border bg-secondary/20 p-6 my-8">
+  <div class="flex flex-col gap-y-3">
+    <div class="flex items-center gap-2 text-primary">
+      <Icon name="lucide:mail" class="size-5" />
+      <h3 class="text-base font-semibold text-foreground">Yangi maqolalardan xabardor bo'ling</h3>
+    </div>
+    <p class="text-xs text-muted-foreground leading-relaxed">
+      SnaxLab'da e'lon qilinadigan yangi adabiy, falsafiy va musiqiy tahlillarni to'g'ridan-to'g'ri kuzatib boring. Spam yo'q, faqat muhim maqolalar.
+    </p>
+
+    <div class="mt-2 flex flex-col sm:flex-row gap-2">
+      <form
+        id="newsletter-form"
+        class="flex grow gap-2"
+        onsubmit="event.preventDefault(); document.getElementById('newsletter-msg').classList.remove('hidden'); this.reset();"
+      >
+        <input
+          type="email"
+          name="email"
+          required
+          placeholder="elektron@pochta.uz"
+          aria-label="Elektron pochta manzilingiz"
+          class="grow rounded-md border border-border bg-background px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
+        />
+        <button
+          type="submit"
+          class="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors cursor-pointer shrink-0"
+        >
+          Obuna bo'lish
+        </button>
+      </form>
+
+      <Link
+        href="https://t.me/mahmudjanovr"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center justify-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs text-foreground hover:bg-secondary transition-colors shrink-0"
+      >
+        <Icon name="lucide:send" class="size-3.5 text-sky-500" />
+        <span>Telegram kanal</span>
+      </Link>
+    </div>
+
+    <p id="newsletter-msg" class="hidden text-xs text-green-600 dark:text-green-400 mt-1">
+      Rahmat! Sizning so'rovingiz qabul qilindi. Tez orada tasdiq xabari yuboriladi.
+    </p>
+  </div>
+</section>

@@ -1,0 +1,124 @@
+---
+import { Icon } from 'astro-icon/components'
+
+interface Props {
+  title: string
+  url?: string
+}
+
+const { title, url } = Astro.props
+---
+
+<div class="share-controls flex items-center gap-2 text-xs" data-share-title={title} data-share-url={url}>
+  <span class="text-muted-foreground mr-1 font-medium">Ulashish:</span>
+
+  <button
+    type="button"
+    class="copy-link-btn inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs text-foreground transition-colors hover:bg-secondary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    aria-label="Havolani nusxalash"
+    title="Havolani nusxalash"
+  >
+    <Icon name="lucide:copy" class="size-3.5 copy-icon" />
+    <Icon name="lucide:check" class="size-3.5 check-icon hidden text-green-600 dark:text-green-400" />
+    <span class="btn-label">Havola</span>
+  </button>
+
+  <a
+    href={`https://t.me/share/url?url=${encodeURIComponent(url || '')}&text=${encodeURIComponent(title)}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="telegram-share-btn inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs text-foreground transition-colors hover:bg-secondary"
+    aria-label="Telegram orqali ulashish"
+    title="Telegram orqali ulashish"
+  >
+    <Icon name="lucide:send" class="size-3.5" />
+    <span>Telegram</span>
+  </a>
+
+  <a
+    href={`https://x.com/intent/tweet?url=${encodeURIComponent(url || '')}&text=${encodeURIComponent(title)}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="x-share-btn inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs text-foreground transition-colors hover:bg-secondary"
+    aria-label="X (Twitter) orqali ulashish"
+    title="X orqali ulashish"
+  >
+    <Icon name="lucide:twitter" class="size-3.5" />
+    <span>X</span>
+  </a>
+
+  <button
+    type="button"
+    class="native-share-btn hidden items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs text-foreground transition-colors hover:bg-secondary cursor-pointer"
+    aria-label="Ko'proq ulashish imkoniyatlari"
+    title="Ko'proq ulashish"
+  >
+    <Icon name="lucide:share-2" class="size-3.5" />
+    <span>Boshqa</span>
+  </button>
+</div>
+
+<script>
+  function setupShareControls() {
+    const containers = document.querySelectorAll('.share-controls')
+    containers.forEach((container) => {
+      const copyBtn = container.querySelector('.copy-link-btn')
+      const nativeBtn = container.querySelector('.native-share-btn') as HTMLButtonElement | null
+      const tgLink = container.querySelector('.telegram-share-btn') as HTMLAnchorElement | null
+      const xLink = container.querySelector('.x-share-btn') as HTMLAnchorElement | null
+
+      const title = container.getAttribute('data-share-title') || document.title
+      const rawUrl = container.getAttribute('data-share-url') || window.location.href
+      const shareUrl = rawUrl.startsWith('http') ? rawUrl : window.location.origin + rawUrl
+
+      if (tgLink) {
+        tgLink.href = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(title)}`
+      }
+      if (xLink) {
+        xLink.href = `https://x.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(title)}`
+      }
+
+      if (navigator.share && nativeBtn) {
+        nativeBtn.classList.remove('hidden')
+        nativeBtn.classList.add('inline-flex')
+        nativeBtn.onclick = async () => {
+          try {
+            await navigator.share({ title, url: shareUrl })
+          } catch {}
+        }
+      }
+
+      if (copyBtn) {
+        const copyIcon = copyBtn.querySelector('.copy-icon')
+        const checkIcon = copyBtn.querySelector('.check-icon')
+        const label = copyBtn.querySelector('.btn-label')
+
+        copyBtn.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(shareUrl)
+            if (copyIcon && checkIcon && label) {
+              copyIcon.classList.add('hidden')
+              checkIcon.classList.remove('hidden')
+              label.textContent = 'Nusxalandi!'
+              setTimeout(() => {
+                copyIcon.classList.remove('hidden')
+                checkIcon.classList.add('hidden')
+                label.textContent = 'Havola'
+              }, 2000)
+            }
+          } catch {
+            const tempInput = document.createElement('input')
+            tempInput.value = shareUrl
+            document.body.appendChild(tempInput)
+            tempInput.select()
+            document.execCommand('copy')
+            document.body.removeChild(tempInput)
+          }
+        })
+      }
+    })
+  }
+
+  setupShareControls()
+  document.addEventListener('astro:page-load', setupShareControls)
+</script>

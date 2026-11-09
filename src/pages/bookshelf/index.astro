@@ -1,0 +1,73 @@
+---
+import BookCard from '@/components/BookCard.astro'
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import PageHead from '@/components/PageHead.astro'
+import Layout from '@/layouts/Layout.astro'
+import { getAllBooks } from '@/lib/data-utils'
+import { Icon } from 'astro-icon/components'
+
+const books = await getAllBooks()
+const featuredBook = books.find((b) => b.data.featured) || books[0]
+const otherBooks = books.filter((b) => b.id !== featuredBook?.id)
+
+const readCount = books.filter((b) => b.data.status === 'read').length
+const readingCount = books.filter((b) => b.data.status === 'reading').length
+const wantCount = books.filter((b) => b.data.status === 'want-to-read').length
+---
+
+<Layout class="max-w-3xl">
+  <PageHead
+    slot="head"
+    title="Kitob javoni"
+    description="Shaxsiy kitob javoni: mutolaa qilingan mumtoz asarlar, falsafiy tahlillar va tavsiyalar to'plami."
+  />
+
+  <Breadcrumbs items={[{ label: 'Kitob javoni', icon: 'lucide:book-open' }]} />
+
+  <!-- Editorial Intro -->
+  <section class="flex flex-col gap-y-4">
+    <div class="flex flex-col gap-y-2">
+      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">Kitob javoni</h1>
+      <p class="text-muted-foreground text-sm sm:text-base leading-relaxed">
+        Mutolaa qilingan, o'qilayotgan va kelgusi rejaga kiritilgan asarlar. Bu shunchaki ro'yxat emas, balki shaxsiy falsafiy va adabiy mushohadalar to'plamidir.
+      </p>
+    </div>
+
+    <!-- Status Stats -->
+    <div class="flex flex-wrap gap-2 pt-2">
+      <span class="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/30 px-3 py-1 text-xs">
+        <span class="size-2 rounded-full bg-green-500"></span>
+        {readCount} ta o'qilgan
+      </span>
+      <span class="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/30 px-3 py-1 text-xs">
+        <span class="size-2 rounded-full bg-blue-500"></span>
+        {readingCount} ta o'qilmoqda
+      </span>
+      <span class="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/30 px-3 py-1 text-xs">
+        <span class="size-2 rounded-full bg-amber-500"></span>
+        {wantCount} ta rejada
+      </span>
+    </div>
+  </section>
+
+  <!-- Featured Book -->
+  {featuredBook && (
+    <section class="mt-8 flex flex-col gap-y-3">
+      <div class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
+        <Icon name="lucide:sparkles" class="size-4" />
+        <span>Hafta tavsiyasi</span>
+      </div>
+      <BookCard book={featuredBook} />
+    </section>
+  )}
+
+  <!-- Books Grid -->
+  <section class="mt-10 flex flex-col gap-y-6">
+    <h2 class="text-xl font-semibold tracking-tight">Kutubxona kolleksiyasi</h2>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {otherBooks.map((book) => (
+        <BookCard book={book} />
+      ))}
+    </div>
+  </section>
+</Layout>

@@ -2,50 +2,67 @@
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import PageHead from '@/components/PageHead.astro'
 import Layout from '@/layouts/Layout.astro'
-import { getCollection } from 'astro:content'
+import { getAllPosts } from '@/lib/data-utils'
 
-const posts = await getCollection('blog', ({ data }) => !data.draft)
-const items = posts
-  .map((p) => ({
-    id: p.id,
-    title: p.data.title,
-    description: p.data.description ?? '',
-    date: p.data.date,
-    tags: p.data.tags ?? [],
-    href: `/blog/${p.id}/`,
-  }))
-  .sort((a, b) => b.date.valueOf() - a.date.valueOf())
+const posts = await getAllPosts()
+const initialData = posts.map((post) => {
+  const rawBody = post.body || ''
+  const cleanBody = rawBody
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/[#*`_~\[\]]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 1500)
+
+  return {
+    id: post.id,
+    title: post.data.title,
+    description: post.data.description || '',
+    date: post.data.date.toISOString().slice(0, 10),
+    tags: post.data.tags || [],
+    href: `/blog/${post.id}/`,
+    body: cleanBody,
+  }
+})
 ---
 
 <Layout class="max-w-3xl">
   <PageHead
     slot="head"
     title="Qidiruv"
-    description="SnaxLab maqolalarini sarlavha, tavsif yoki teglar bo'yicha qidiring."
+    description="SnaxLab maqolalarini to'liq matn, sarlavha, tavsif yoki teglar bo'yicha qidiring."
   />
   <Breadcrumbs items={[{ label: 'Qidiruv', icon: 'lucide:search' }]} />
 
-  <div class="flex flex-col gap-4">
-    <h1 class="text-2xl font-semibold tracking-tight">Qidiruv</h1>
-    <p class="text-muted-foreground">
-      Maqolalarni sarlavha, tavsif yoki teglar bo'yicha qidiring. Maslahat: faollashtirish uchun <kbd class="rounded border px-1">/</kbd> tugmasini bosing.
-    </p>
+  <div class="flex flex-col gap-6">
+    <div class="flex flex-col gap-y-1">
+      <h1 class="text-3xl font-bold tracking-tight">Qidiruv</h1>
+      <p class="text-muted-foreground text-sm">
+        Maqolalarni sarlavha, to'liq matn yoki teglar bo'yicha qidiring. Faollashtirish uchun <kbd class="rounded border border-border bg-secondary/50 px-1.5 py-0.5 text-xs font-mono">/</kbd> tugmasini bosing.
+      </p>
+    </div>
 
-    <div class="sticky top-3 z-10 rounded-lg border bg-background/70 p-3 backdrop-blur">
+    <div class="sticky top-20 z-10 rounded-xl border border-border bg-background/80 p-3 shadow-sm backdrop-blur-md">
       <input
-        id="q"
+        id="search-input"
         type="search"
         autocomplete="off"
-        placeholder="Maqolalarni qidirish..."
+        autofocus
+        placeholder="Kalit so'zni kiriting (masalan: Kamyu, absurd, Linux, Terry)..."
         aria-label="Maqolalarni qidirish"
-        class="w-full rounded-md border bg-background px-3 py-2 text-base outline-none focus:ring-2 focus:ring-ring sm:text-sm"
+        class="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
       />
     </div>
 
-    <div id="results" class="flex flex-col gap-3"></div>
+    <!-- Live Results stats -->
+    <div id="results-count" class="text-xs text-muted-foreground"></div>
+
+    <!-- Search Results Container -->
+    <div id="search-results" class="flex flex-col gap-3"></div>
   </div>
 
-  <script is:inline define:vars={{ data: items }}>
+  <script is:inline define:vars={{ initialData }}>
     function escapeHtml(str) {
       if (!str) return '';
       return String(str)
@@ -56,63 +73,137 @@ const items = posts
         .replace(/'/g, '&#039;');
     }
 
-    function initSearch() {
-      const input = document.getElementById('q');
-      const results = document.getElementById('results');
-      if (!input || !results) return;
+    function highlightText(text, query) {
+      if (!query || !text) return escapeHtml(text);
+      const words = query.trim().split(/\s+/).filter(Boolean);
+      let escaped = escapeHtml(text);
+      for (const w of words) {
+        const re = new RegExp(`(${escapeHtml(w)})`, 'gi');
+        escaped = escaped.replace(re, '<mark class="bg-primary/20 text-foreground font-semibold px-0.5 rounded">$1</mark>');
+      }
+      return escaped;
+    }
 
-      const render = (list) => {
+    function extractExcerpt(body, query, maxLen = 160) {
+      if (!body) return '';
+      if (!query) return escapeHtml(body.slice(0, maxLen)) + '...';
+      const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+      const lower = body.toLowerCase();
+      let bestIndex = -1;
+      for (const w of words) {
+        const idx = lower.indexOf(w);
+        if (idx > -1) {
+          bestIndex = idx;
+          break;
+        }
+      }
+      if (bestIndex === -1) {
+        return escapeHtml(body.slice(0, maxLen)) + (body.length > maxLen ? '...' : '');
+      }
+      const start = Math.max(0, bestIndex - 40);
+      const end = Math.min(body.length, start + maxLen);
+      const prefix = start > 0 ? '...' : '';
+      const suffix = end < body.length ? '...' : '';
+      return prefix + highlightText(body.slice(start, end), query) + suffix;
+    }
+
+    function initSearch() {
+      const input = document.getElementById('search-input');
+      const resultsEl = document.getElementById('search-results');
+      const countEl = document.getElementById('results-count');
+      if (!input || !resultsEl) return;
+
+      const items = initialData || [];
+
+      function renderList(list, query) {
         if (!list.length) {
-          results.innerHTML = '<p class="text-muted-foreground italic">Hech narsa topilmadi.</p>';
+          if (countEl) countEl.textContent = 'Hech narsa topilmadi.';
+          resultsEl.innerHTML = `
+            <div class="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+              <p class="font-medium text-foreground">Hech qanday maqola topilmadi</p>
+              <p class="mt-1 text-xs">Boshqa kalit so'z yoki muallif nomi bilan qidirib ko'ring.</p>
+            </div>
+          `;
           return;
         }
-        results.innerHTML = list.map((p) => {
-          const tags = (p.tags || []).map((t) => `<span class="rounded border px-2 py-0.5 text-xs text-muted-foreground">${escapeHtml(t)}</span>`).join('');
+
+        if (countEl) {
+          countEl.textContent = query ? `${list.length} ta natija topildi` : `Barcha maqolalar (${list.length})`;
+        }
+
+        resultsEl.innerHTML = list.map((p) => {
+          const tags = (p.tags || []).map((t) =>
+            `<span class="rounded border border-border bg-secondary/50 px-2 py-0.5 text-[11px] text-muted-foreground">#${escapeHtml(t)}</span>`
+          ).join(' ');
+
+          const titleHtml = highlightText(p.title, query);
+          const descHtml = p.description ? highlightText(p.description, query) : '';
+          const excerptHtml = query ? extractExcerpt(p.body, query) : '';
+
           return `
-            <article class="group rounded-lg border p-4 transition hover:bg-muted/30">
-              <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                  <h2 class="truncate text-base font-semibold">
-                    <a class="outline-none group-hover:underline" href="${escapeHtml(p.href)}">${escapeHtml(p.title)}</a>
-                  </h2>
-                  ${p.description ? `<p class="mt-1 line-clamp-2 text-sm text-muted-foreground">${escapeHtml(p.description)}</p>` : ''}
-                  ${tags ? `<div class="mt-3 flex flex-wrap gap-2">${tags}</div>` : ''}
+            <article class="group relative rounded-xl border border-border p-4 transition-colors hover:bg-secondary/40">
+              <div class="flex flex-col gap-1.5">
+                <div class="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                  <time>${escapeHtml(p.date)}</time>
+                  <div class="flex gap-1">${tags}</div>
                 </div>
+                <h2 class="text-base font-semibold">
+                  <a href="${escapeHtml(p.href)}" class="outline-none group-hover:text-primary transition-colors">
+                    <span class="absolute inset-0" aria-hidden="true"></span>
+                    ${titleHtml}
+                  </a>
+                </h2>
+                ${descHtml ? `<p class="text-xs text-muted-foreground line-clamp-2">${descHtml}</p>` : ''}
+                ${excerptHtml ? `<p class="mt-1 text-xs text-foreground/80 bg-secondary/20 p-2 rounded border border-border/40 font-serif leading-relaxed">${excerptHtml}</p>` : ''}
               </div>
             </article>
           `;
         }).join('');
-      };
+      }
 
-      const normalize = (s) => (s || '').toString().toLowerCase();
-      const filter = () => {
-        const q = normalize(input.value).trim();
-        if (!q) return render(data);
+      function filter() {
+        const q = input.value.trim().toLowerCase();
+        if (!q) {
+          renderList(items, '');
+          return;
+        }
+
         const words = q.split(/\s+/).filter(Boolean);
-        const out = data.filter((p) => {
-          const hay = normalize(p.title) + ' ' + normalize(p.description) + ' ' + normalize((p.tags || []).join(' '));
+        const filtered = items.filter((p) => {
+          const hay = (
+            (p.title || '') + ' ' +
+            (p.description || '') + ' ' +
+            (p.tags || []).join(' ') + ' ' +
+            (p.body || '')
+          ).toLowerCase();
           return words.every((w) => hay.includes(w));
         });
-        render(out);
-      };
 
-      render(data);
-      input.addEventListener('input', filter);
+        renderList(filtered, q);
+      }
 
-      const keyHandler = (e) => {
+      let timeout = null;
+      input.addEventListener('input', () => {
+        clearTimeout(timeout);
+        timeout = setTimeout(filter, 80);
+      });
+
+      renderList(items, '');
+
+      // Key handling
+      const handleKeyDown = (e) => {
         if (e.key === '/' && document.activeElement !== input) {
           e.preventDefault();
           input.focus();
         }
-        if (e.key === 'Escape') {
+        if (e.key === 'Escape' && document.activeElement === input) {
           input.blur();
         }
       };
 
-      window.addEventListener('keydown', keyHandler);
-
+      window.addEventListener('keydown', handleKeyDown);
       document.addEventListener('astro:before-swap', () => {
-        window.removeEventListener('keydown', keyHandler);
+        window.removeEventListener('keydown', handleKeyDown);
       }, { once: true });
     }
 

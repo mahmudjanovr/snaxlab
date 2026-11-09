@@ -1,0 +1,106 @@
+---
+import { Icon } from 'astro-icon/components'
+
+interface Props {
+  id: string
+  title: string
+  href: string
+  date?: string
+  description?: string
+}
+
+const { id, title, href, date = '', description = '' } = Astro.props
+---
+
+<button
+  type="button"
+  class="bookmark-toggle-btn inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs text-foreground transition-colors hover:bg-secondary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+  data-id={id}
+  data-title={title}
+  data-href={href}
+  data-date={date}
+  data-description={description}
+  aria-label="Maqolani saqlash"
+  aria-pressed="false"
+  title="Keyinroq o'qish uchun saqlash"
+>
+  <Icon name="lucide:bookmark" class="size-3.5 bookmark-outline" />
+  <Icon name="lucide:bookmark-check" class="size-3.5 bookmark-filled hidden text-primary" />
+  <span class="bookmark-label">Saqlash</span>
+</button>
+
+<script>
+  const STORAGE_KEY = 'snaxlab_saved_articles_v1'
+
+  function getSavedArticles() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEY)
+      return data ? JSON.parse(data) : []
+    } catch {
+      return []
+    }
+  }
+
+  function setSavedArticles(articles: any[]) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(articles))
+      window.dispatchEvent(new CustomEvent('snaxlab:bookmarks-changed', { detail: articles }))
+    } catch {}
+  }
+
+  function setupBookmarkButtons() {
+    const buttons = document.querySelectorAll('.bookmark-toggle-btn')
+    const saved = getSavedArticles()
+
+    buttons.forEach((btn) => {
+      const id = btn.getAttribute('data-id')
+      if (!id) return
+
+      const outline = btn.querySelector('.bookmark-outline')
+      const filled = btn.querySelector('.bookmark-filled')
+      const label = btn.querySelector('.bookmark-label')
+
+      const isSaved = saved.some((item: any) => item.id === id)
+      updateUI(isSaved)
+
+      function updateUI(savedState: boolean) {
+        btn.setAttribute('aria-pressed', savedState ? 'true' : 'false')
+        if (savedState) {
+          outline?.classList.add('hidden')
+          filled?.classList.remove('hidden')
+          if (label) label.textContent = 'Saqlangan'
+          btn.setAttribute('title', "Saqlanganlardan o'chirish")
+        } else {
+          outline?.classList.remove('hidden')
+          filled?.classList.add('hidden')
+          if (label) label.textContent = 'Saqlash'
+          btn.setAttribute('title', "Keyinroq o'qish uchun saqlash")
+        }
+      }
+
+      btn.addEventListener('click', () => {
+        const currentSaved = getSavedArticles()
+        const index = currentSaved.findIndex((item: any) => item.id === id)
+        if (index > -1) {
+          currentSaved.splice(index, 1)
+          setSavedArticles(currentSaved)
+          updateUI(false)
+        } else {
+          currentSaved.unshift({
+            id,
+            title: btn.getAttribute('data-title') || '',
+            href: btn.getAttribute('data-href') || '',
+            date: btn.getAttribute('data-date') || '',
+            description: btn.getAttribute('data-description') || '',
+            savedAt: new Date().toISOString(),
+          })
+          setSavedArticles(currentSaved)
+          updateUI(true)
+        }
+      })
+    })
+  }
+
+  setupBookmarkButtons()
+  document.addEventListener('astro:page-load', setupBookmarkButtons)
+</script>

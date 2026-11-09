@@ -1,0 +1,94 @@
+---
+import { Icon } from 'astro-icon/components'
+---
+
+<div
+  id="image-lightbox"
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity duration-200 opacity-0"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Kattalashtirilgan rasm"
+>
+  <button
+    id="lightbox-close-btn"
+    type="button"
+    class="absolute top-4 right-4 z-10 flex size-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-white"
+    aria-label="Yopish"
+  >
+    <Icon name="lucide:x" class="size-6" />
+  </button>
+
+  <div class="relative max-h-[90vh] max-w-[90vw] overflow-hidden rounded-lg shadow-2xl">
+    <img
+      id="lightbox-image"
+      src=""
+      alt=""
+      class="max-h-[85vh] max-w-[88vw] object-contain select-none transition-transform duration-200"
+    />
+    <p id="lightbox-caption" class="text-center text-xs text-white/80 py-2 bg-black/40 truncate px-4"></p>
+  </div>
+</div>
+
+<script>
+  function setupLightbox() {
+    const lightbox = document.getElementById('image-lightbox')
+    const imgEl = document.getElementById('lightbox-image') as HTMLImageElement | null
+    const captionEl = document.getElementById('lightbox-caption')
+    const closeBtn = document.getElementById('lightbox-close-btn')
+    if (!lightbox || !imgEl) return
+
+    function openLightbox(src: string, alt: string) {
+      if (!lightbox || !imgEl) return
+      imgEl.src = src
+      imgEl.alt = alt
+      if (captionEl) captionEl.textContent = alt || ''
+      lightbox.classList.remove('hidden')
+      requestAnimationFrame(() => {
+        lightbox.classList.remove('opacity-0')
+        lightbox.classList.add('flex', 'opacity-100')
+      })
+      document.body.style.overflow = 'hidden'
+      closeBtn?.focus()
+    }
+
+    function closeLightbox() {
+      if (!lightbox || !imgEl) return
+      lightbox.classList.remove('opacity-100')
+      lightbox.classList.add('opacity-0')
+      setTimeout(() => {
+        lightbox.classList.remove('flex')
+        lightbox.classList.add('hidden')
+        imgEl.src = ''
+        document.body.style.overflow = ''
+      }, 200)
+    }
+
+    // Attach to images in article
+    const articleImages = document.querySelectorAll('main article img')
+    articleImages.forEach((img) => {
+      // Don't apply to links or tiny icons
+      if (img.closest('a') || img.classList.contains('size-5') || img.classList.contains('size-4')) return
+      img.classList.add('cursor-zoom-in')
+      img.addEventListener('click', () => {
+        const imageElement = img as HTMLImageElement
+        openLightbox(imageElement.currentSrc || imageElement.src, imageElement.alt)
+      })
+    })
+
+    closeBtn?.addEventListener('click', closeLightbox)
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox || e.target === imgEl.parentElement) {
+        closeLightbox()
+      }
+    })
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !lightbox.classList.contains('hidden')) {
+        closeLightbox()
+      }
+    })
+  }
+
+  setupLightbox()
+  document.addEventListener('astro:page-load', setupLightbox)
+</script>

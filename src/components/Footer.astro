@@ -1,28 +1,63 @@
 ---
 import { Separator } from '@/components/ui/separator'
-import { SOCIAL_LINKS } from '@/consts'
+import { FOOTER_SECTIONS, SOCIAL_LINKS } from '@/consts'
 import Link from './Link.astro'
 import SocialIcons from './SocialIcons.astro'
+import { Icon } from 'astro-icon/components'
 ---
 
-<footer class="py-4">
-  <div
-    class="mx-auto flex max-w-3xl flex-col items-center justify-center gap-y-2 px-4 sm:flex-row sm:justify-between"
-  >
-    <div class="flex flex-wrap items-center justify-center gap-x-2 text-center">
-      <span class="text-muted-foreground text-sm">
-        &copy; {new Date().getFullYear()} Barcha huquqlar himoyalangan.
-      </span>
-      <Separator orientation="vertical" className="hidden h-4! sm:block" />
-      <p class="text-muted-foreground text-sm">
-        <Link
-          href="https://t.me/mahmudjanovr"
-          class="text-foreground"
-          external
-          underline>snaxcyz</Link
-        > tomonidan yaratilgan!
-      </p>
+<footer class="mt-16 border-t border-border pt-10 pb-8 text-xs text-muted-foreground">
+  <div class="mx-auto flex max-w-3xl flex-col gap-y-8 px-4">
+    <!-- Editorial Navigation Grid -->
+    <div class="grid grid-cols-2 gap-6 sm:grid-cols-3">
+      {
+        FOOTER_SECTIONS.map((section) => (
+          <div class="flex flex-col gap-y-2.5">
+            <h4 class="font-semibold text-foreground text-xs uppercase tracking-wider">
+              {section.title}
+            </h4>
+            <ul class="flex flex-col gap-y-1.5" role="list">
+              {section.links.map((link) => (
+                <li>
+                  <Link
+                    href={link.href}
+                    class="hover:text-foreground transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
     </div>
-    <SocialIcons links={SOCIAL_LINKS} />
+
+    <Separator className="bg-border/60" />
+
+    <!-- Bottom Bar -->
+    <div
+      class="flex flex-col items-center justify-between gap-y-4 sm:flex-row"
+    >
+      <div class="flex flex-wrap items-center justify-center gap-x-2 text-center text-xs">
+        <span>
+          &copy; {new Date().getFullYear()} SnaxLab. Barcha huquqlar himoyalangan.
+        </span>
+        <span class="hidden sm:inline">&bull;</span>
+        <button
+          type="button"
+          class="inline-flex items-center gap-1 hover:text-foreground cursor-pointer underline underline-offset-2"
+          onclick="document.getElementById('shortcuts-modal')?.classList.remove('hidden'); document.getElementById('shortcuts-modal')?.classList.remove('opacity-0'); document.getElementById('shortcuts-modal')?.classList.add('flex', 'opacity-100');"
+          title="Klaviatura tugmalari (?)"
+        >
+          <Icon name="lucide:command" class="size-3" />
+          <span>Tugmalar (?)</span>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <SocialIcons links={SOCIAL_LINKS} />
+      </div>
+    </div>
   </div>
 </footer>

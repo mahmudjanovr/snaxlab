@@ -1,0 +1,41 @@
+---
+import BlogCard from '@/components/BlogCard.astro'
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import PageHead from '@/components/PageHead.astro'
+import Layout from '@/layouts/Layout.astro'
+import { getAllEssays } from '@/lib/data-utils'
+
+const essays = await getAllEssays()
+---
+
+<Layout class="max-w-3xl">
+  <PageHead
+    slot="head"
+    title="Esselar va tahliliy maqolalar"
+    description="Falsafa, san'at, jamiyat va klassik adabiyot haqidagi teran, keng qamrovli shaxsiy esselar."
+  />
+
+  <Breadcrumbs items={[{ label: 'Esselar', icon: 'lucide:feather' }]} />
+
+  <section class="flex flex-col gap-y-3">
+    <h1 class="text-3xl font-bold tracking-tight">Esselar & Chuqur tahlillar</h1>
+    <p class="text-muted-foreground text-sm sm:text-base leading-relaxed">
+      Klassik matnlar, falsafiy qarashlar va insoniy qadriyatlar to'g'risida kengaytirilgan mulohazalar to'plami.
+    </p>
+  </section>
+
+  <section class="mt-8 flex flex-col gap-y-4">
+    <div class="flex items-center justify-between pb-2 border-b border-border">
+      <h2 class="text-lg font-medium">Barcha esselar ({essays.length})</h2>
+      <span class="text-xs text-muted-foreground">Sana bo'yicha saralangan</span>
+    </div>
+
+    <ul class="flex flex-col gap-4">
+      {essays.map((post) => (
+        <li>
+          <BlogCard entry={post} />
+        </li>
+      ))}
+    </ul>
+  </section>
+</Layout>

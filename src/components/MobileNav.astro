@@ -1,0 +1,104 @@
+---
+import { NAV_LINKS } from '@/consts'
+import { Icon } from 'astro-icon/components'
+import Link from './Link.astro'
+---
+
+<div class="relative sm:hidden" id="mobile-nav-root">
+  <button
+    id="mobile-nav-btn"
+    type="button"
+    class="flex size-9 items-center justify-center rounded-md border border-border bg-background text-foreground hover:bg-secondary transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    aria-label="Navigatsiya menyusini ochish"
+    aria-expanded="false"
+    aria-controls="mobile-nav-menu"
+  >
+    <Icon name="lucide:menu" class="size-5 menu-open-icon" />
+    <Icon name="lucide:x" class="size-5 menu-close-icon hidden" />
+  </button>
+
+  <div
+    id="mobile-nav-menu"
+    class="absolute right-0 top-11 z-50 hidden min-w-48 flex-col rounded-xl border border-border bg-background/95 p-2 shadow-xl backdrop-blur-md transition-all opacity-0"
+    role="menu"
+    aria-label="Mobil menyu"
+  >
+    {
+      NAV_LINKS.map((item) => (
+        <Link
+          href={item.href}
+          class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-secondary hover:text-foreground transition-colors"
+          role="menuitem"
+        >
+          {item.label}
+        </Link>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  function setupMobileNav() {
+    const root = document.getElementById('mobile-nav-root')
+    const btn = document.getElementById('mobile-nav-btn')
+    const menu = document.getElementById('mobile-nav-menu')
+    if (!root || !btn || !menu) return
+
+    const openIcon = btn.querySelector('.menu-open-icon')
+    const closeIcon = btn.querySelector('.menu-close-icon')
+
+    let isOpen = false
+
+    function toggleMenu(show?: boolean) {
+      isOpen = typeof show === 'boolean' ? show : !isOpen
+      btn?.setAttribute('aria-expanded', isOpen ? 'true' : 'false')
+
+      if (isOpen) {
+        openIcon?.classList.add('hidden')
+        closeIcon?.classList.remove('hidden')
+        menu?.classList.remove('hidden')
+        requestAnimationFrame(() => {
+          menu?.classList.remove('opacity-0')
+          menu?.classList.add('opacity-100')
+        })
+      } else {
+        openIcon?.classList.remove('hidden')
+        closeIcon?.classList.add('hidden')
+        menu?.classList.remove('opacity-100')
+        menu?.classList.add('opacity-0')
+        setTimeout(() => {
+          if (!isOpen) menu?.classList.add('hidden')
+        }, 150)
+      }
+    }
+
+    btn.onclick = (e) => {
+      e.stopPropagation()
+      toggleMenu()
+    }
+
+    // Close on click outside
+    document.addEventListener('click', (e) => {
+      if (isOpen && !root.contains(e.target as Node)) {
+        toggleMenu(false)
+      }
+    })
+
+    // Close on Escape
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        toggleMenu(false)
+      }
+    })
+
+    // Close on navigation
+    menu.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => toggleMenu(false))
+    })
+
+    document.addEventListener('astro:before-swap', () => toggleMenu(false), { once: true })
+  }
+
+  setupMobileNav()
+  document.addEventListener('astro:page-load', setupMobileNav)
+</script>
